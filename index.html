@@ -1,623 +1,758 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Egg Tracker</title>
-  <style>
-    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap');
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Egg Tracker</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap');
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#F5F1EA;--surface:#FFFFFF;--header:#1A1A18;--text:#26231C;
+  --muted:#8C8070;--amber:#C97B00;--amber-lt:#FEF3C7;--amber-mid:#F59E0B;
+  --green:#15803D;--green-lt:#DCFCE7;--red:#DC2626;--red-lt:#FEE2E2;
+  --blue:#1D4ED8;--blue-lt:#DBEAFE;--border:#E8DFD0;--mono:'JetBrains Mono',monospace;
+  --sans:'Inter',sans-serif;--radius:10px;
+}
+body{font-family:var(--sans);background:var(--bg);color:var(--text);min-height:100vh;font-size:15px;}
 
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+/* ── HEADER ── */
+header{background:var(--header);color:#fff;padding:0 1.5rem;display:flex;align-items:center;justify-content:space-between;height:52px;position:sticky;top:0;z-index:200;}
+.logo{display:flex;align-items:center;gap:.5rem;font-weight:700;font-size:.95rem;letter-spacing:-.01em;}
+.logo span{opacity:.5;font-weight:400}
+nav{display:flex;gap:2px;}
+.nav-btn{background:none;border:none;color:rgba(255,255,255,.5);font:500 .82rem var(--sans);padding:.38rem .85rem;border-radius:6px;cursor:pointer;transition:all .15s;}
+.nav-btn.active{background:rgba(255,255,255,.13);color:#fff;}
+.nav-btn:hover:not(.active){color:rgba(255,255,255,.8);}
 
-    :root {
-      --bg:        #F7F3EC;
-      --surface:   #FFFFFF;
-      --header:    #1C1A16;
-      --text:      #2C2A25;
-      --muted:     #8A8070;
-      --amber:     #D97706;
-      --amber-lt:  #FDE68A;
-      --green:     #16A34A;
-      --green-lt:  #DCFCE7;
-      --red:       #DC2626;
-      --red-lt:    #FEE2E2;
-      --border:    #E5DDD0;
-      --mono:      'JetBrains Mono', monospace;
-      --sans:      'Inter', sans-serif;
-    }
+/* ── LAYOUT ── */
+main{max-width:1040px;margin:0 auto;padding:1.5rem 1.25rem 4rem;}
+.page{display:none;}.page.active{display:block;}
 
-    body {
-      font-family: var(--sans);
-      background: var(--bg);
-      color: var(--text);
-      min-height: 100vh;
-    }
+/* ── FARM TABS ── */
+.farm-tabs{display:flex;gap:6px;margin-bottom:1.25rem;flex-wrap:wrap;}
+.farm-tab{background:var(--surface);border:1.5px solid var(--border);border-radius:8px;padding:.45rem 1.1rem;font:600 .82rem var(--sans);cursor:pointer;transition:all .15s;color:var(--muted);}
+.farm-tab.active{border-color:var(--amber-mid);background:var(--amber-lt);color:#92400E;}
 
-    /* HEADER */
-    header {
-      background: var(--header);
-      color: #fff;
-      padding: 0 2rem;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      height: 56px;
-      position: sticky;
-      top: 0;
-      z-index: 100;
-    }
-    .logo { display: flex; align-items: center; gap: .6rem; font-weight: 600; font-size: 1rem; letter-spacing: -.01em; }
-    .logo-egg { font-size: 1.4rem; }
-    .nav-tabs { display: flex; gap: .25rem; }
-    .tab-btn {
-      background: none; border: none; color: rgba(255,255,255,.55);
-      font: 500 .85rem var(--sans); padding: .4rem .9rem; border-radius: 6px;
-      cursor: pointer; transition: all .15s;
-    }
-    .tab-btn.active { background: rgba(255,255,255,.12); color: #fff; }
-    .tab-btn:hover:not(.active) { color: rgba(255,255,255,.85); }
+/* ── DATE ROW ── */
+.date-row{display:flex;align-items:center;gap:.75rem;margin-bottom:1.25rem;}
+.date-row label{font-size:.8rem;font-weight:500;color:var(--muted);}
+.date-row input{font:400 .88rem var(--mono);background:var(--surface);border:1.5px solid var(--border);border-radius:8px;padding:.4rem .75rem;color:var(--text);outline:none;}
+.date-row input:focus{border-color:var(--amber-mid);}
 
-    /* MAIN */
-    main { max-width: 900px; margin: 0 auto; padding: 2rem 1.5rem 4rem; }
+/* ── EGG GRID (inventory input) ── */
+.egg-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:.75rem;margin-bottom:1.25rem;}
+.egg-card{background:var(--surface);border:1.5px solid var(--border);border-radius:var(--radius);padding:1rem 1.1rem;}
+.egg-card-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:.65rem;}
+.egg-size-label{font-weight:700;font-size:.88rem;letter-spacing:.01em;}
+.egg-badge{font-size:.68rem;font-weight:600;padding:.18rem .5rem;border-radius:99px;background:var(--amber-lt);color:#92400E;}
+.egg-inputs{display:grid;grid-template-columns:1fr 1fr;gap:.5rem;}
+.egg-input-wrap{display:flex;flex-direction:column;gap:.25rem;}
+.egg-input-wrap label{font-size:.7rem;font-weight:500;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;}
+.egg-input-wrap input{font:600 .95rem var(--mono);background:var(--bg);border:1.5px solid var(--border);border-radius:7px;padding:.4rem .6rem;color:var(--text);outline:none;width:100%;text-align:center;}
+.egg-input-wrap input:focus{border-color:var(--amber-mid);background:#fff;}
+.egg-input-wrap .subtotal{font:600 .78rem var(--mono);color:var(--amber);text-align:center;margin-top:.15rem;}
 
-    /* PAGES */
-    .page { display: none; }
-    .page.active { display: block; }
+/* ── SAVE ROW ── */
+.save-row{display:flex;align-items:center;justify-content:space-between;gap:1rem;flex-wrap:wrap;margin-bottom:1.5rem;}
+.save-row .total-preview{font:600 1rem var(--mono);color:var(--text);}
+.save-row .total-preview span{color:var(--muted);font-weight:400;font-size:.82rem;margin-right:.4rem;}
+.btn-primary{background:var(--amber-mid);color:#fff;border:none;font:600 .88rem var(--sans);border-radius:8px;padding:.6rem 1.5rem;cursor:pointer;transition:background .12s;}
+.btn-primary:hover{background:var(--amber);}
+.btn-sm{font:500 .75rem var(--sans);border:1px solid var(--border);background:var(--bg);border-radius:6px;padding:.28rem .6rem;cursor:pointer;color:var(--red);transition:all .12s;}
+.btn-sm:hover{background:var(--red-lt);border-color:var(--red);}
+.btn-outline{font:500 .82rem var(--sans);border:1.5px solid var(--border);background:var(--surface);border-radius:8px;padding:.5rem 1.1rem;cursor:pointer;color:var(--text);transition:all .12s;}
+.btn-outline:hover{border-color:var(--amber-mid);}
 
-    /* TALLY COUNTER — signature element */
-    .tally-card {
-      background: var(--header);
-      color: #fff;
-      border-radius: 16px;
-      padding: 2rem;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 1.5rem;
-      margin-bottom: 1.5rem;
-    }
-    .tally-label { font-size: .8rem; text-transform: uppercase; letter-spacing: .1em; color: rgba(255,255,255,.45); margin-bottom: .4rem; }
-    .tally-number {
-      font-family: var(--mono);
-      font-size: 4rem;
-      font-weight: 600;
-      letter-spacing: -.04em;
-      color: #fff;
-      line-height: 1;
-    }
-    .tally-unit { font-size: .9rem; color: rgba(255,255,255,.45); margin-top: .3rem; }
-    .tally-actions { display: flex; flex-direction: column; gap: .5rem; }
-    .tally-btn {
-      font-family: var(--sans); font-size: .85rem; font-weight: 600;
-      border: none; border-radius: 8px; padding: .55rem 1.2rem;
-      cursor: pointer; transition: all .12s; white-space: nowrap;
-    }
-    .tally-btn.add { background: var(--amber); color: #fff; }
-    .tally-btn.add:hover { background: #B45309; }
-    .tally-btn.remove { background: rgba(255,255,255,.1); color: rgba(255,255,255,.8); }
-    .tally-btn.remove:hover { background: rgba(255,255,255,.18); }
+/* ── SUMMARY TABLE ── */
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:1.1rem 1.25rem;margin-bottom:1rem;}
+.card-title{font-size:.72rem;text-transform:uppercase;letter-spacing:.09em;color:var(--muted);margin-bottom:.75rem;font-weight:600;}
+.table-wrap{overflow-x:auto;}
+table{width:100%;border-collapse:collapse;font-size:.84rem;}
+thead th{text-align:left;font-size:.7rem;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);padding:.5rem .65rem;border-bottom:1.5px solid var(--border);font-weight:600;white-space:nowrap;}
+thead th:not(:first-child){text-align:right;}
+tbody tr{border-bottom:1px solid var(--border);}
+tbody tr:last-child{border-bottom:none;}
+tbody td{padding:.6rem .65rem;font-family:var(--mono);font-size:.82rem;text-align:right;}
+tbody td:first-child{text-align:left;font-family:var(--sans);font-weight:600;font-size:.84rem;}
+tfoot td{padding:.6rem .65rem;font-family:var(--mono);font-size:.82rem;text-align:right;font-weight:700;border-top:1.5px solid var(--border);background:var(--bg);}
+tfoot td:first-child{text-align:left;font-family:var(--sans);font-weight:700;}
+.zero{color:var(--border);}
 
-    /* SECTION GRID */
-    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem; }
-    @media (max-width: 580px) { .grid-2 { grid-template-columns: 1fr; } .tally-card { flex-direction: column; align-items: flex-start; } .tally-number { font-size: 3rem; } }
+/* ══════════════════════════════════════
+   POS
+══════════════════════════════════════ */
+.pos-layout{display:grid;grid-template-columns:1fr 340px;gap:1rem;align-items:start;}
+@media(max-width:720px){.pos-layout{grid-template-columns:1fr;}}
 
-    /* CARD */
-    .card {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      padding: 1.25rem 1.5rem;
-    }
-    .card-title { font-size: .75rem; text-transform: uppercase; letter-spacing: .09em; color: var(--muted); margin-bottom: .5rem; }
-    .stat-val { font-family: var(--mono); font-size: 1.9rem; font-weight: 600; line-height: 1.1; }
-    .stat-sub { font-size: .8rem; color: var(--muted); margin-top: .25rem; }
+/* size picker */
+.pos-sizes{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:.6rem;margin-bottom:1rem;}
+.size-btn{background:var(--surface);border:2px solid var(--border);border-radius:var(--radius);padding:.9rem .75rem;cursor:pointer;transition:all .15s;text-align:center;}
+.size-btn:hover{border-color:var(--amber-mid);}
+.size-btn.selected{border-color:var(--amber-mid);background:var(--amber-lt);}
+.size-btn .sname{font-weight:700;font-size:.95rem;display:block;margin-bottom:.2rem;}
+.size-btn .sprice{font:600 .78rem var(--mono);color:var(--muted);}
+.size-btn.selected .sprice{color:#92400E;}
 
-    /* FORM */
-    .form-card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 1.5rem; margin-bottom: 1.5rem; }
-    .form-title { font-weight: 600; font-size: 1rem; margin-bottom: 1.25rem; }
-    .form-row { display: flex; gap: .75rem; flex-wrap: wrap; }
-    .form-group { display: flex; flex-direction: column; gap: .35rem; flex: 1; min-width: 140px; }
-    label { font-size: .8rem; font-weight: 500; color: var(--muted); }
-    input, select {
-      font: 400 .9rem var(--sans);
-      background: var(--bg);
-      border: 1px solid var(--border);
-      border-radius: 8px;
-      padding: .55rem .75rem;
-      color: var(--text);
-      outline: none;
-      transition: border .12s;
-      width: 100%;
-    }
-    input:focus, select:focus { border-color: var(--amber); }
-    .btn-primary {
-      background: var(--amber); color: #fff; border: none;
-      font: 600 .9rem var(--sans); border-radius: 8px;
-      padding: .6rem 1.5rem; cursor: pointer; transition: background .12s;
-      align-self: flex-end; white-space: nowrap; height: 38px;
-    }
-    .btn-primary:hover { background: #B45309; }
-    .btn-sm {
-      font: 500 .78rem var(--sans); border: 1px solid var(--border);
-      background: var(--bg); border-radius: 6px; padding: .3rem .65rem;
-      cursor: pointer; color: var(--red); transition: all .12s;
-    }
-    .btn-sm:hover { background: var(--red-lt); border-color: var(--red); }
+/* unit toggle */
+.unit-toggle{display:flex;gap:.4rem;margin-bottom:1rem;}
+.unit-btn{flex:1;padding:.6rem;border-radius:8px;border:2px solid var(--border);background:var(--surface);font:600 .85rem var(--sans);cursor:pointer;transition:all .15s;text-align:center;}
+.unit-btn.selected{border-color:var(--amber-mid);background:var(--amber-lt);color:#92400E;}
 
-    /* TABLE */
-    .table-wrap { overflow-x: auto; }
-    table { width: 100%; border-collapse: collapse; font-size: .88rem; }
-    thead th { text-align: left; font-size: .72rem; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); padding: .6rem .75rem; border-bottom: 1px solid var(--border); font-weight: 500; }
-    tbody tr { border-bottom: 1px solid var(--border); }
-    tbody tr:last-child { border-bottom: none; }
-    tbody td { padding: .75rem .75rem; vertical-align: middle; }
-    .badge { display: inline-block; font-size: .72rem; font-weight: 600; padding: .2rem .55rem; border-radius: 99px; }
-    .badge-green { background: var(--green-lt); color: var(--green); }
-    .badge-amber { background: var(--amber-lt); color: #92400E; }
-    .badge-red   { background: var(--red-lt);   color: var(--red); }
-    .mono { font-family: var(--mono); }
+/* qty pad */
+.qty-pad{margin-bottom:1rem;}
+.qty-display{font:700 2.5rem var(--mono);text-align:center;padding:.5rem;background:var(--bg);border-radius:8px;margin-bottom:.6rem;letter-spacing:-.02em;}
+.qty-display .qty-unit-label{font-size:.95rem;font-weight:400;color:var(--muted);margin-left:.35rem;}
+.numpad{display:grid;grid-template-columns:repeat(3,1fr);gap:.4rem;}
+.np-btn{background:var(--surface);border:1.5px solid var(--border);border-radius:8px;padding:.75rem;font:600 1.1rem var(--sans);cursor:pointer;transition:all .12s;text-align:center;}
+.np-btn:hover{background:var(--bg);}
+.np-btn.np-zero{grid-column:span 2;}
+.np-btn.np-del{background:var(--bg);}
+.np-btn.np-clear{background:var(--red-lt);color:var(--red);border-color:#FECACA;}
 
-    /* EMPTY STATE */
-    .empty { text-align: center; padding: 3rem 1rem; color: var(--muted); font-size: .9rem; }
-    .empty-icon { font-size: 2.5rem; margin-bottom: .5rem; }
+/* cart */
+.pos-cart{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);display:flex;flex-direction:column;height:fit-content;position:sticky;top:64px;}
+.cart-header{padding:.85rem 1.1rem;border-bottom:1px solid var(--border);font-weight:700;font-size:.9rem;display:flex;justify-content:space-between;align-items:center;}
+.cart-items{min-height:120px;max-height:320px;overflow-y:auto;}
+.cart-item{display:flex;align-items:center;justify-content:space-between;padding:.65rem 1.1rem;border-bottom:1px solid var(--border);gap:.5rem;}
+.cart-item:last-child{border-bottom:none;}
+.ci-name{font-weight:600;font-size:.85rem;}
+.ci-detail{font-size:.75rem;color:var(--muted);}
+.ci-price{font:600 .88rem var(--mono);white-space:nowrap;}
+.cart-empty{text-align:center;color:var(--muted);font-size:.85rem;padding:2rem 1rem;}
+.cart-footer{border-top:1.5px solid var(--border);padding:.85rem 1.1rem;}
+.cart-total{display:flex;justify-content:space-between;align-items:center;margin-bottom:.85rem;}
+.cart-total-label{font-weight:600;font-size:.9rem;}
+.cart-total-val{font:700 1.5rem var(--mono);}
+.cart-farm-row{display:flex;align-items:center;gap:.5rem;margin-bottom:.75rem;}
+.cart-farm-row label{font-size:.78rem;font-weight:500;color:var(--muted);}
+.cart-farm-row select{font:400 .82rem var(--sans);background:var(--bg);border:1.5px solid var(--border);border-radius:7px;padding:.35rem .6rem;color:var(--text);outline:none;flex:1;}
+.cart-farm-row select:focus{border-color:var(--amber-mid);}
+.btn-charge{width:100%;background:var(--header);color:#fff;border:none;font:700 1rem var(--sans);border-radius:8px;padding:.8rem;cursor:pointer;transition:background .12s;}
+.btn-charge:hover{background:#333;}
+.btn-charge:disabled{background:var(--border);cursor:not-allowed;}
 
-    /* LOW STOCK WARNING */
-    .alert { background: var(--red-lt); border: 1px solid #FECACA; border-radius: 10px; padding: .85rem 1.1rem; display: flex; align-items: center; gap: .65rem; font-size: .87rem; color: var(--red); margin-bottom: 1rem; }
-    .alert-icon { font-size: 1.1rem; }
-    .alert.hidden { display: none; }
+/* add to cart btn */
+.add-cart-row{margin-bottom:1rem;}
+.btn-add-cart{width:100%;background:var(--amber-mid);color:#fff;border:none;font:700 .95rem var(--sans);border-radius:9px;padding:.75rem;cursor:pointer;transition:background .12s;}
+.btn-add-cart:hover{background:var(--amber);}
+.btn-add-cart:disabled{background:var(--border);cursor:not-allowed;}
 
-    /* SECTION LABEL */
-    .section-label { font-weight: 600; font-size: .95rem; margin: 1.5rem 0 .75rem; }
+/* toast */
+.toast{position:fixed;bottom:1.5rem;left:50%;transform:translateX(-50%) translateY(80px);background:var(--header);color:#fff;padding:.65rem 1.4rem;border-radius:99px;font:500 .85rem var(--sans);opacity:0;transition:all .3s;pointer-events:none;z-index:9999;white-space:nowrap;}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
 
-    /* HISTORY FILTER */
-    .filter-row { display: flex; align-items: center; gap: .75rem; margin-bottom: .75rem; flex-wrap: wrap; }
-    .filter-row label { font-size: .8rem; color: var(--muted); font-weight: 500; }
-    .filter-row select { max-width: 160px; height: 34px; padding: .3rem .65rem; }
+/* ══════════════════════════════════════
+   SETTINGS
+══════════════════════════════════════ */
+.settings-section{margin-bottom:2rem;}
+.settings-title{font-weight:700;font-size:1rem;margin-bottom:1rem;}
+.price-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:.65rem;}
+.price-card{background:var(--surface);border:1.5px solid var(--border);border-radius:var(--radius);padding:.9rem 1rem;}
+.price-card label{display:block;font:700 .85rem var(--sans);margin-bottom:.5rem;}
+.price-inputs{display:grid;grid-template-columns:1fr 1fr;gap:.4rem;}
+.price-sub{font-size:.68rem;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:.25rem;}
+.price-input-wrap input{font:600 .9rem var(--mono);background:var(--bg);border:1.5px solid var(--border);border-radius:7px;padding:.38rem .6rem;color:var(--text);outline:none;width:100%;}
+.price-input-wrap input:focus{border-color:var(--amber-mid);}
+.farm-name-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:.65rem;margin-bottom:1rem;}
+.farm-name-wrap{background:var(--surface);border:1.5px solid var(--border);border-radius:var(--radius);padding:.9rem 1rem;}
+.farm-name-wrap label{display:block;font:600 .78rem var(--sans);color:var(--muted);margin-bottom:.35rem;text-transform:uppercase;letter-spacing:.07em;}
+.farm-name-wrap input{font:600 .9rem var(--sans);background:var(--bg);border:1.5px solid var(--border);border-radius:7px;padding:.4rem .65rem;color:var(--text);outline:none;width:100%;}
+.farm-name-wrap input:focus{border-color:var(--amber-mid);}
 
-    /* SUMMARY ROW */
-    .summary-row { background: var(--bg); border-radius: 8px; padding: .65rem .75rem; display: flex; justify-content: space-between; align-items: center; font-size: .85rem; margin-top: .5rem; }
-    .summary-row strong { font-family: var(--mono); font-size: .95rem; }
-  </style>
+/* ══════════════════════════════════════
+   HISTORY
+══════════════════════════════════════ */
+.history-filters{display:flex;gap:.6rem;margin-bottom:1rem;flex-wrap:wrap;align-items:center;}
+.history-filters select,.history-filters input[type=date]{font:400 .82rem var(--sans);background:var(--surface);border:1.5px solid var(--border);border-radius:7px;padding:.38rem .7rem;color:var(--text);outline:none;}
+.history-filters select:focus,.history-filters input[type=date]:focus{border-color:var(--amber-mid);}
+.badge{display:inline-block;font-size:.7rem;font-weight:700;padding:.18rem .5rem;border-radius:99px;}
+.badge-inv{background:#EDE9FE;color:#5B21B6;}
+.badge-sale{background:var(--amber-lt);color:#92400E;}
+
+/* ── MISC ── */
+.empty{text-align:center;padding:2.5rem 1rem;color:var(--muted);font-size:.88rem;}
+.empty-icon{font-size:2rem;margin-bottom:.4rem;}
+.section-label{font-weight:700;font-size:.92rem;margin:1.25rem 0 .65rem;}
+.stat-row{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:.65rem;margin-bottom:1.25rem;}
+.stat-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:.9rem 1rem;}
+.stat-card .sc-label{font-size:.7rem;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);font-weight:600;margin-bottom:.3rem;}
+.stat-card .sc-val{font:700 1.5rem var(--mono);}
+.stat-card .sc-sub{font-size:.75rem;color:var(--muted);margin-top:.15rem;}
+@media(max-width:580px){.pos-sizes{grid-template-columns:repeat(3,1fr);}.size-btn{padding:.65rem .4rem;}}
+</style>
 </head>
 <body>
 
 <header>
-  <div class="logo"><span class="logo-egg">🥚</span> Egg Tracker</div>
-  <nav class="nav-tabs">
-    <button class="tab-btn active" onclick="showPage('inventory')">Inventory</button>
-    <button class="tab-btn" onclick="showPage('sales')">Sales</button>
-    <button class="tab-btn" onclick="showPage('history')">History</button>
+  <div class="logo">🥚 <span>Egg Tracker</span></div>
+  <nav>
+    <button class="nav-btn active" onclick="showPage('inventory',this)">Inventory</button>
+    <button class="nav-btn" onclick="showPage('pos',this)">Sales POS</button>
+    <button class="nav-btn" onclick="showPage('history',this)">History</button>
+    <button class="nav-btn" onclick="showPage('settings',this)">Settings</button>
   </nav>
 </header>
 
 <main>
 
-  <!-- ═══════════════════════ INVENTORY PAGE ═══════════════════════ -->
-  <div class="page active" id="page-inventory">
+<!-- ══════════════════════════════════════════════════════
+     INVENTORY PAGE
+══════════════════════════════════════════════════════ -->
+<div class="page active" id="page-inventory">
+  <div class="farm-tabs" id="inv-farm-tabs"></div>
 
-    <div class="alert hidden" id="low-stock-alert">
-      <span class="alert-icon">⚠️</span>
-      <span id="low-stock-msg">Stock is running low.</span>
+  <div class="date-row">
+    <label>Date</label>
+    <input type="date" id="inv-date"/>
+    <button class="btn-outline" onclick="loadInventoryDay()">Load</button>
+  </div>
+
+  <div class="egg-grid" id="inv-egg-grid"></div>
+
+  <div class="save-row">
+    <div class="total-preview"><span>Total eggs today:</span><span id="inv-total-preview">0</span></div>
+    <button class="btn-primary" onclick="saveInventoryDay()">Save Day's Collection</button>
+  </div>
+
+  <div class="section-label">Recent Collections — <span id="inv-farm-name-label"></span></div>
+  <div class="card">
+    <div class="table-wrap">
+      <table id="inv-history-table">
+        <thead><tr id="inv-history-head"></tr></thead>
+        <tbody id="inv-history-body"></tbody>
+        <tfoot id="inv-history-foot"></tfoot>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════
+     POS PAGE
+══════════════════════════════════════════════════════ -->
+<div class="page" id="page-pos">
+  <div class="pos-layout">
+    <div>
+      <div class="section-label" style="margin-top:0">1. Select size</div>
+      <div class="pos-sizes" id="pos-sizes"></div>
+
+      <div class="section-label">2. Pieces or trays?</div>
+      <div class="unit-toggle">
+        <button class="unit-btn selected" id="unit-pcs" onclick="selectUnit('pcs')">Pieces</button>
+        <button class="unit-btn" id="unit-tray" onclick="selectUnit('tray')">Trays (30 pcs)</button>
+      </div>
+
+      <div class="section-label">3. Quantity</div>
+      <div class="qty-pad">
+        <div class="qty-display" id="qty-display">0<span class="qty-unit-label" id="qty-unit-label">pcs</span></div>
+        <div class="numpad">
+          <button class="np-btn" onclick="numpad('7')">7</button>
+          <button class="np-btn" onclick="numpad('8')">8</button>
+          <button class="np-btn" onclick="numpad('9')">9</button>
+          <button class="np-btn" onclick="numpad('4')">4</button>
+          <button class="np-btn" onclick="numpad('5')">5</button>
+          <button class="np-btn" onclick="numpad('6')">6</button>
+          <button class="np-btn" onclick="numpad('1')">1</button>
+          <button class="np-btn" onclick="numpad('2')">2</button>
+          <button class="np-btn" onclick="numpad('3')">3</button>
+          <button class="np-btn np-zero" onclick="numpad('0')">0</button>
+          <button class="np-btn np-del" onclick="numpad('del')">⌫</button>
+        </div>
+      </div>
+
+      <div class="add-cart-row">
+        <button class="btn-add-cart" id="btn-add-cart" onclick="addToCart()" disabled>Add to Order</button>
+      </div>
     </div>
 
-    <div class="tally-card">
-      <div>
-        <div class="tally-label">Current Stock</div>
-        <div class="tally-number" id="stock-display">0</div>
-        <div class="tally-unit">eggs on hand</div>
+    <!-- CART -->
+    <div class="pos-cart">
+      <div class="cart-header">
+        <span>Current Order</span>
+        <button class="btn-sm" onclick="clearCart()">Clear</button>
       </div>
-      <div class="tally-actions">
-        <button class="tally-btn add" onclick="openAddStock()">+ Add Stock</button>
-        <button class="tally-btn remove" onclick="openAdjust()">Adjust Count</button>
+      <div class="cart-items" id="cart-items">
+        <div class="cart-empty">No items yet</div>
       </div>
-    </div>
-
-    <div class="grid-2">
-      <div class="card">
-        <div class="card-title">Added This Month</div>
-        <div class="stat-val mono" id="added-month">0</div>
-        <div class="stat-sub">eggs collected</div>
-      </div>
-      <div class="card">
-        <div class="card-title">Sold This Month</div>
-        <div class="stat-val mono" id="sold-month">0</div>
-        <div class="stat-sub">eggs sold</div>
-      </div>
-    </div>
-
-    <!-- Add Stock Form -->
-    <div class="form-card" id="add-stock-form" style="display:none">
-      <div class="form-title">Add Egg Collection</div>
-      <div class="form-row">
-        <div class="form-group">
-          <label>Quantity</label>
-          <input type="number" id="add-qty" min="1" placeholder="e.g. 24" />
+      <div class="cart-footer">
+        <div class="cart-total">
+          <span class="cart-total-label">Total</span>
+          <span class="cart-total-val" id="cart-total">₱0.00</span>
         </div>
-        <div class="form-group">
-          <label>Date</label>
-          <input type="date" id="add-date" />
+        <div class="cart-farm-row">
+          <label>Farm</label>
+          <select id="pos-farm-select"></select>
         </div>
-        <div class="form-group">
-          <label>Note (optional)</label>
-          <input type="text" id="add-note" placeholder="e.g. Morning collection" />
-        </div>
-        <button class="btn-primary" onclick="addStock()">Save</button>
-      </div>
-    </div>
-
-    <!-- Adjust Form -->
-    <div class="form-card" id="adjust-form" style="display:none">
-      <div class="form-title">Manual Adjustment</div>
-      <div class="form-row">
-        <div class="form-group">
-          <label>Set Stock To</label>
-          <input type="number" id="adjust-qty" min="0" placeholder="New total" />
-        </div>
-        <div class="form-group">
-          <label>Reason</label>
-          <input type="text" id="adjust-reason" placeholder="e.g. Breakage, recount…" />
-        </div>
-        <button class="btn-primary" onclick="adjustStock()">Update</button>
-      </div>
-    </div>
-
-    <div class="section-label">Collection History</div>
-    <div class="card">
-      <div class="table-wrap">
-        <table>
-          <thead><tr><th>Date</th><th>Qty</th><th>Note</th><th></th></tr></thead>
-          <tbody id="collection-tbody">
-            <tr><td colspan="4"><div class="empty"><div class="empty-icon">🥚</div>No collections yet</div></td></tr>
-          </tbody>
-        </table>
+        <button class="btn-charge" id="btn-charge" onclick="chargeOrder()" disabled>Charge</button>
       </div>
     </div>
   </div>
+</div>
 
-  <!-- ═══════════════════════ SALES PAGE ═══════════════════════ -->
-  <div class="page" id="page-sales">
-
-    <div class="form-card">
-      <div class="form-title">Record a Sale</div>
-      <div class="form-row">
-        <div class="form-group">
-          <label>Quantity Sold</label>
-          <input type="number" id="sale-qty" min="1" placeholder="e.g. 12" />
-        </div>
-        <div class="form-group">
-          <label>Price per Egg (₱)</label>
-          <input type="number" id="sale-price" min="0" step="0.01" placeholder="e.g. 8.50" />
-        </div>
-        <div class="form-group">
-          <label>Customer (optional)</label>
-          <input type="text" id="sale-customer" placeholder="Name or label" />
-        </div>
-        <div class="form-group">
-          <label>Date</label>
-          <input type="date" id="sale-date" />
-        </div>
-        <button class="btn-primary" onclick="recordSale()">Record Sale</button>
-      </div>
-    </div>
-
-    <div class="grid-2" style="margin-bottom:1.5rem">
-      <div class="card">
-        <div class="card-title">Revenue This Month</div>
-        <div class="stat-val mono" id="revenue-month">₱0.00</div>
-        <div class="stat-sub" id="revenue-txn-count">0 transactions</div>
-      </div>
-      <div class="card">
-        <div class="card-title">Avg Price / Egg</div>
-        <div class="stat-val mono" id="avg-price">₱0.00</div>
-        <div class="stat-sub">this month</div>
-      </div>
-    </div>
-
-    <div class="section-label">Sales Log</div>
-    <div class="card">
-      <div class="table-wrap">
-        <table>
-          <thead><tr><th>Date</th><th>Qty</th><th>Price/Egg</th><th>Total</th><th>Customer</th><th></th></tr></thead>
-          <tbody id="sales-tbody">
-            <tr><td colspan="6"><div class="empty"><div class="empty-icon">📋</div>No sales yet</div></td></tr>
-          </tbody>
-        </table>
-      </div>
-      <div class="summary-row" id="sales-summary" style="display:none">
-        <span>Total Revenue</span>
-        <strong id="sales-total-val">₱0.00</strong>
-      </div>
-    </div>
+<!-- ══════════════════════════════════════════════════════
+     HISTORY PAGE
+══════════════════════════════════════════════════════ -->
+<div class="page" id="page-history">
+  <div class="history-filters">
+    <select id="hist-farm-filter" onchange="renderHistory()">
+      <option value="all">All Farms</option>
+    </select>
+    <select id="hist-type-filter" onchange="renderHistory()">
+      <option value="all">All Types</option>
+      <option value="inventory">Inventory</option>
+      <option value="sale">Sales</option>
+    </select>
+    <select id="hist-month-filter" onchange="renderHistory()"></select>
   </div>
 
-  <!-- ═══════════════════════ HISTORY PAGE ═══════════════════════ -->
-  <div class="page" id="page-history">
-    <div class="filter-row">
-      <label>Filter by month:</label>
-      <select id="history-month-filter" onchange="renderHistory()"></select>
-    </div>
+  <div class="stat-row" id="hist-stats"></div>
 
-    <div class="grid-2">
-      <div class="card">
-        <div class="card-title">Eggs Collected</div>
-        <div class="stat-val mono" id="hist-collected">0</div>
-      </div>
-      <div class="card">
-        <div class="card-title">Eggs Sold</div>
-        <div class="stat-val mono" id="hist-sold">0</div>
-      </div>
-      <div class="card">
-        <div class="card-title">Revenue</div>
-        <div class="stat-val mono" id="hist-revenue">₱0.00</div>
-      </div>
-      <div class="card">
-        <div class="card-title">Net Stock Change</div>
-        <div class="stat-val mono" id="hist-net">0</div>
-      </div>
-    </div>
-
-    <div class="section-label">All Events</div>
-    <div class="card">
-      <div class="table-wrap">
-        <table>
-          <thead><tr><th>Date</th><th>Type</th><th>Qty</th><th>Detail</th></tr></thead>
-          <tbody id="history-tbody">
-            <tr><td colspan="4"><div class="empty"><div class="empty-icon">📅</div>No records yet</div></td></tr>
-          </tbody>
-        </table>
-      </div>
+  <div class="card">
+    <div class="table-wrap">
+      <table>
+        <thead><tr>
+          <th>Date</th><th>Type</th><th>Farm</th><th>Size</th><th style="text-align:right">Qty</th><th style="text-align:right">Amount</th>
+        </tr></thead>
+        <tbody id="hist-body"></tbody>
+      </table>
     </div>
   </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════
+     SETTINGS PAGE
+══════════════════════════════════════════════════════ -->
+<div class="page" id="page-settings">
+  <div class="settings-section">
+    <div class="settings-title">Farm Names</div>
+    <div class="farm-name-grid" id="farm-name-grid"></div>
+  </div>
+
+  <div class="settings-section">
+    <div class="settings-title">Prices per Size</div>
+    <p style="font-size:.82rem;color:var(--muted);margin-bottom:.85rem;">Set the price per piece and per tray (30 pcs) for each egg size.</p>
+    <div class="price-grid" id="price-grid"></div>
+  </div>
+
+  <button class="btn-primary" onclick="saveSettings()">Save Settings</button>
+</div>
 
 </main>
 
+<div class="toast" id="toast"></div>
+
 <script>
-// ─── STATE ─────────────────────────────────────────────────────────────────
-const LOW_STOCK_THRESHOLD = 12;
+// ─── CONSTANTS ──────────────────────────────────────────────────────────────
+const SIZES = ['Reject','Pullets','Small','Medium','Large','XL','Jumbo'];
+const FARMS = [0,1,2];
+const TRAY  = 30;
 
-function loadState() {
-  return {
-    stock: parseInt(localStorage.getItem('egg_stock') || '0'),
-    collections: JSON.parse(localStorage.getItem('egg_collections') || '[]'),
-    sales:       JSON.parse(localStorage.getItem('egg_sales')       || '[]'),
-  };
+// ─── STATE ──────────────────────────────────────────────────────────────────
+function def(key, val){ const s = localStorage.getItem(key); return s !== null ? JSON.parse(s) : val; }
+function save(key, val){ localStorage.setItem(key, JSON.stringify(val)); }
+
+let farmNames = def('farmNames', ['Farm 1','Farm 2','Farm 3']);
+
+// prices[size] = { pcs: number, tray: number }
+let prices = def('prices', Object.fromEntries(SIZES.map(s => [s, {pcs:0, tray:0}])));
+
+// inventory[farmIdx][dateStr][size] = { trays, pcs }
+let inventory = def('inventory', [{},{},{}]);
+
+// sales = [{ id, date, farmIdx, size, unit, qty, pcsTotal, price, total }]
+let sales = def('sales', []);
+
+// ─── POS STATE ───────────────────────────────────────────────────────────────
+let posSelected = null; // size name
+let posUnit     = 'pcs';
+let posQtyStr   = '';
+let cart        = [];
+
+// ─── NAV ─────────────────────────────────────────────────────────────────────
+function showPage(name, btn){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));
+  document.getElementById('page-'+name).classList.add('active');
+  if(btn) btn.classList.add('active');
+  if(name==='inventory') renderInventoryPage();
+  if(name==='pos') renderPOS();
+  if(name==='history') { renderHistoryFilters(); renderHistory(); }
+  if(name==='settings') renderSettings();
 }
 
-function saveState(state) {
-  localStorage.setItem('egg_stock',       state.stock);
-  localStorage.setItem('egg_collections', JSON.stringify(state.collections));
-  localStorage.setItem('egg_sales',       JSON.stringify(state.sales));
+// ─── TOAST ───────────────────────────────────────────────────────────────────
+function toast(msg){
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'), 2200);
 }
 
-let state = loadState();
-
-// ─── HELPERS ───────────────────────────────────────────────────────────────
+// ─── HELPERS ─────────────────────────────────────────────────────────────────
 const today = () => new Date().toISOString().split('T')[0];
-const fmtDate = d => { const [y,m,dd] = d.split('-'); return `${dd}/${m}/${y}`; };
-const fmtPeso = n => '₱' + Number(n).toFixed(2);
-const currentMonthKey = () => { const n = new Date(); return `${n.getFullYear()}-${String(n.getMonth()+1).padStart(2,'0')}`; };
-const entryMonth = d => d.slice(0,7);
+const fmtDate = d => { if(!d) return ''; const [y,m,dd]=d.split('-'); return `${dd}/${m}/${y}`; };
+const fmtP = n => '₱'+Number(n).toFixed(2);
+const monthKey = d => d ? d.slice(0,7) : '';
+const fmtMonth = mk => { const [y,m]=mk.split('-'); return new Date(y,m-1).toLocaleDateString('en-PH',{month:'long',year:'numeric'}); };
 
-// ─── NAVIGATION ────────────────────────────────────────────────────────────
-function showPage(name) {
-  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-  document.getElementById('page-' + name).classList.add('active');
-  event.currentTarget.classList.add('active');
-  if (name === 'history') { populateMonthFilter(); renderHistory(); }
+// ─── INVENTORY PAGE ──────────────────────────────────────────────────────────
+let invFarm = 0;
+let invDate = today();
+
+function renderInventoryPage(){
+  // farm tabs
+  const tabs = document.getElementById('inv-farm-tabs');
+  tabs.innerHTML = FARMS.map(i=>`
+    <button class="farm-tab ${i===invFarm?'active':''}" onclick="switchInvFarm(${i})">${farmNames[i]}</button>
+  `).join('');
+  document.getElementById('inv-date').value = invDate;
+  document.getElementById('inv-farm-name-label').textContent = farmNames[invFarm];
+  renderEggGrid();
+  renderInvHistory();
 }
 
-// ─── INVENTORY ─────────────────────────────────────────────────────────────
-function openAddStock() {
-  const f = document.getElementById('add-stock-form');
-  const a = document.getElementById('adjust-form');
-  f.style.display = f.style.display === 'none' ? 'block' : 'none';
-  a.style.display = 'none';
-  document.getElementById('add-date').value = today();
-}
-function openAdjust() {
-  const f = document.getElementById('adjust-form');
-  const a = document.getElementById('add-stock-form');
-  f.style.display = f.style.display === 'none' ? 'block' : 'none';
-  a.style.display = 'none';
-  document.getElementById('adjust-qty').value = state.stock;
+function switchInvFarm(i){
+  invFarm = i;
+  renderInventoryPage();
 }
 
-function addStock() {
-  const qty  = parseInt(document.getElementById('add-qty').value);
-  const date = document.getElementById('add-date').value;
-  const note = document.getElementById('add-note').value.trim();
-  if (!qty || qty < 1 || !date) { alert('Please enter a valid quantity and date.'); return; }
-  state.stock += qty;
-  state.collections.unshift({ id: Date.now(), date, qty, note });
-  saveState(state);
-  document.getElementById('add-qty').value = '';
-  document.getElementById('add-note').value = '';
-  document.getElementById('add-stock-form').style.display = 'none';
-  render();
+function renderEggGrid(){
+  const farmData = inventory[invFarm] || {};
+  const dayData  = farmData[invDate] || {};
+  const grid = document.getElementById('inv-egg-grid');
+  grid.innerHTML = SIZES.map(size => {
+    const d = dayData[size] || {trays:0, pcs:0};
+    return `<div class="egg-card">
+      <div class="egg-card-top">
+        <span class="egg-size-label">${size}</span>
+        <span class="egg-badge">${fmtP(prices[size]?.pcs||0)}/pc</span>
+      </div>
+      <div class="egg-inputs">
+        <div class="egg-input-wrap">
+          <label>Trays</label>
+          <input type="number" min="0" id="inp-${size}-trays" value="${d.trays||''}" placeholder="0" oninput="updateTotal()"/>
+        </div>
+        <div class="egg-input-wrap">
+          <label>Pieces</label>
+          <input type="number" min="0" id="inp-${size}-pcs" value="${d.pcs||''}" placeholder="0" oninput="updateTotal()"/>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+  updateTotal();
 }
 
-function adjustStock() {
-  const qty    = parseInt(document.getElementById('adjust-qty').value);
-  const reason = document.getElementById('adjust-reason').value.trim();
-  if (isNaN(qty) || qty < 0) { alert('Please enter a valid number.'); return; }
-  const diff = qty - state.stock;
-  state.stock = qty;
-  if (diff !== 0) {
-    state.collections.unshift({ id: Date.now(), date: today(), qty: diff, note: 'Adjustment: ' + (reason || 'manual recount'), adjust: true });
-  }
-  saveState(state);
-  document.getElementById('adjust-form').style.display = 'none';
-  render();
+function updateTotal(){
+  let t = 0;
+  SIZES.forEach(size=>{
+    const tr = parseInt(document.getElementById(`inp-${size}-trays`)?.value||0)||0;
+    const pc = parseInt(document.getElementById(`inp-${size}-pcs`)?.value||0)||0;
+    t += tr*TRAY + pc;
+  });
+  document.getElementById('inv-total-preview').textContent = t.toLocaleString();
 }
 
-function deleteCollection(id) {
-  const item = state.collections.find(c => c.id === id);
-  if (!item) return;
-  if (!confirm(`Delete this collection of ${Math.abs(item.qty)} eggs?`)) return;
-  state.stock -= item.qty;
-  if (state.stock < 0) state.stock = 0;
-  state.collections = state.collections.filter(c => c.id !== id);
-  saveState(state);
-  render();
+function loadInventoryDay(){
+  invDate = document.getElementById('inv-date').value;
+  renderEggGrid();
 }
 
-// ─── SALES ─────────────────────────────────────────────────────────────────
-function recordSale() {
-  const qty      = parseInt(document.getElementById('sale-qty').value);
-  const price    = parseFloat(document.getElementById('sale-price').value);
-  const customer = document.getElementById('sale-customer').value.trim();
-  const date     = document.getElementById('sale-date').value;
-  if (!qty || qty < 1 || isNaN(price) || price < 0 || !date) { alert('Please fill in qty, price, and date.'); return; }
-  if (qty > state.stock) { if (!confirm(`Only ${state.stock} eggs in stock. Record anyway?`)) return; }
-  state.stock = Math.max(0, state.stock - qty);
-  state.sales.unshift({ id: Date.now(), date, qty, price, customer });
-  saveState(state);
-  document.getElementById('sale-qty').value    = '';
-  document.getElementById('sale-price').value  = '';
-  document.getElementById('sale-customer').value = '';
-  render();
+function saveInventoryDay(){
+  if(!inventory[invFarm]) inventory[invFarm]={};
+  const dayData = {};
+  SIZES.forEach(size=>{
+    const tr = parseInt(document.getElementById(`inp-${size}-trays`)?.value||0)||0;
+    const pc = parseInt(document.getElementById(`inp-${size}-pcs`)?.value||0)||0;
+    dayData[size] = {trays:tr, pcs:pc};
+  });
+  inventory[invFarm][invDate] = dayData;
+  save('inventory', inventory);
+  toast('Collection saved for '+farmNames[invFarm]+' on '+fmtDate(invDate));
+  renderInvHistory();
 }
 
-function deleteSale(id) {
-  const sale = state.sales.find(s => s.id === id);
-  if (!sale) return;
-  if (!confirm(`Delete sale of ${sale.qty} eggs?`)) return;
-  state.stock += sale.qty;
-  state.sales = state.sales.filter(s => s.id !== id);
-  saveState(state);
-  render();
-}
+function renderInvHistory(){
+  const farmData = inventory[invFarm] || {};
+  const dates = Object.keys(farmData).sort().reverse().slice(0,14);
+  const head = document.getElementById('inv-history-head');
+  const body = document.getElementById('inv-history-body');
+  const foot = document.getElementById('inv-history-foot');
 
-// ─── RENDER ────────────────────────────────────────────────────────────────
-function render() {
-  const mk = currentMonthKey();
+  head.innerHTML = `<th>Date</th>${SIZES.map(s=>`<th>${s}</th>`).join('')}<th>Total</th>`;
 
-  // Stock display
-  document.getElementById('stock-display').textContent = state.stock.toLocaleString();
-
-  // Low stock alert
-  const alert = document.getElementById('low-stock-alert');
-  if (state.stock <= LOW_STOCK_THRESHOLD) {
-    alert.classList.remove('hidden');
-    document.getElementById('low-stock-msg').textContent =
-      `Stock is low — only ${state.stock} egg${state.stock !== 1 ? 's' : ''} remaining.`;
-  } else { alert.classList.add('hidden'); }
-
-  // Month stats
-  const monthCollections = state.collections.filter(c => entryMonth(c.date) === mk && !c.adjust);
-  const addedMonth = monthCollections.reduce((s,c) => s + (c.qty > 0 ? c.qty : 0), 0);
-  document.getElementById('added-month').textContent = addedMonth.toLocaleString();
-
-  const monthSales = state.sales.filter(s => entryMonth(s.date) === mk);
-  const soldMonth  = monthSales.reduce((s,c) => s + c.qty, 0);
-  document.getElementById('sold-month').textContent = soldMonth.toLocaleString();
-
-  // Collections table
-  const ctbody = document.getElementById('collection-tbody');
-  if (state.collections.length === 0) {
-    ctbody.innerHTML = `<tr><td colspan="4"><div class="empty"><div class="empty-icon">🥚</div>No collections yet</div></td></tr>`;
-  } else {
-    ctbody.innerHTML = state.collections.map(c => `
-      <tr>
-        <td>${fmtDate(c.date)}</td>
-        <td class="mono">${c.qty > 0 ? '+' : ''}${c.qty}</td>
-        <td style="color:var(--muted);font-size:.83rem">${c.note || '—'}</td>
-        <td><button class="btn-sm" onclick="deleteCollection(${c.id})">Delete</button></td>
-      </tr>`).join('');
+  if(dates.length===0){
+    body.innerHTML = `<tr><td colspan="${SIZES.length+2}"><div class="empty"><div class="empty-icon">🥚</div>No records yet</div></td></tr>`;
+    foot.innerHTML=''; return;
   }
 
-  // Sales revenue stats
-  const revMonth  = monthSales.reduce((s,c) => s + c.qty * c.price, 0);
-  const avgPrice  = monthSales.length ? monthSales.reduce((s,c) => s + c.price, 0) / monthSales.length : 0;
-  document.getElementById('revenue-month').textContent   = fmtPeso(revMonth);
-  document.getElementById('revenue-txn-count').textContent = `${monthSales.length} transaction${monthSales.length !== 1 ? 's' : ''}`;
-  document.getElementById('avg-price').textContent       = fmtPeso(avgPrice);
+  // totals
+  const totals = Object.fromEntries(SIZES.map(s=>[s,0]));
+  let grandTotal = 0;
 
-  // Sales table
-  const stbody = document.getElementById('sales-tbody');
-  if (state.sales.length === 0) {
-    stbody.innerHTML = `<tr><td colspan="6"><div class="empty"><div class="empty-icon">📋</div>No sales yet</div></td></tr>`;
-    document.getElementById('sales-summary').style.display = 'none';
-  } else {
-    const totalRevenue = state.sales.reduce((s,c) => s + c.qty * c.price, 0);
-    stbody.innerHTML = state.sales.map(s => `
-      <tr>
-        <td>${fmtDate(s.date)}</td>
-        <td class="mono">${s.qty}</td>
-        <td class="mono">${fmtPeso(s.price)}</td>
-        <td class="mono" style="font-weight:600">${fmtPeso(s.qty * s.price)}</td>
-        <td style="color:var(--muted);font-size:.83rem">${s.customer || '—'}</td>
-        <td><button class="btn-sm" onclick="deleteSale(${s.id})">Delete</button></td>
-      </tr>`).join('');
-    document.getElementById('sales-summary').style.display = 'flex';
-    document.getElementById('sales-total-val').textContent = fmtPeso(totalRevenue);
-  }
-}
-
-// ─── HISTORY ───────────────────────────────────────────────────────────────
-function populateMonthFilter() {
-  const all = new Set([
-    ...state.collections.map(c => entryMonth(c.date)),
-    ...state.sales.map(s => entryMonth(s.date)),
-  ]);
-  const months = [...all].sort().reverse();
-  const sel = document.getElementById('history-month-filter');
-  const cur = sel.value || currentMonthKey();
-  sel.innerHTML = months.length
-    ? months.map(m => `<option value="${m}" ${m===cur?'selected':''}>${fmtMonthLabel(m)}</option>`).join('')
-    : `<option value="${currentMonthKey()}">${fmtMonthLabel(currentMonthKey())}</option>`;
-}
-
-function fmtMonthLabel(mk) {
-  const [y,m] = mk.split('-');
-  return new Date(y, m-1).toLocaleDateString('en-PH', {month:'long', year:'numeric'});
-}
-
-function renderHistory() {
-  const mk = document.getElementById('history-month-filter').value || currentMonthKey();
-  const cols  = state.collections.filter(c => entryMonth(c.date) === mk);
-  const sales = state.sales.filter(s => entryMonth(s.date) === mk);
-
-  const collected = cols.reduce((s,c) => s + (c.qty > 0 && !c.adjust ? c.qty : 0), 0);
-  const sold      = sales.reduce((s,c) => s + c.qty, 0);
-  const revenue   = sales.reduce((s,c) => s + c.qty * c.price, 0);
-  const net       = collected - sold;
-
-  document.getElementById('hist-collected').textContent = collected.toLocaleString();
-  document.getElementById('hist-sold').textContent      = sold.toLocaleString();
-  document.getElementById('hist-revenue').textContent   = fmtPeso(revenue);
-  document.getElementById('hist-net').textContent       = (net >= 0 ? '+' : '') + net;
-
-  const all = [
-    ...cols.map(c => ({ date: c.date, type: c.adjust ? 'adjust' : 'collection', qty: c.qty, detail: c.note || '—' })),
-    ...sales.map(s => ({ date: s.date, type: 'sale', qty: s.qty, detail: (s.customer || '—') + ' · ' + fmtPeso(s.price) + '/egg' })),
-  ].sort((a,b) => b.date.localeCompare(a.date));
-
-  const tbody = document.getElementById('history-tbody');
-  if (all.length === 0) {
-    tbody.innerHTML = `<tr><td colspan="4"><div class="empty"><div class="empty-icon">📅</div>No records for this month</div></td></tr>`;
-  } else {
-    tbody.innerHTML = all.map(e => {
-      const badge = e.type === 'sale'
-        ? `<span class="badge badge-amber">Sale</span>`
-        : e.type === 'adjust'
-        ? `<span class="badge badge-red">Adjust</span>`
-        : `<span class="badge badge-green">Collection</span>`;
-      const qtyFmt = e.type === 'sale' ? `-${e.qty}` : (e.qty > 0 ? `+${e.qty}` : `${e.qty}`);
-      return `<tr>
-        <td>${fmtDate(e.date)}</td>
-        <td>${badge}</td>
-        <td class="mono">${qtyFmt}</td>
-        <td style="color:var(--muted);font-size:.83rem">${e.detail}</td>
-      </tr>`;
+  body.innerHTML = dates.map(d=>{
+    const day = farmData[d]||{};
+    let rowTotal = 0;
+    const cells = SIZES.map(size=>{
+      const v = day[size]||{trays:0,pcs:0};
+      const n = v.trays*TRAY + v.pcs;
+      totals[size]+=n; rowTotal+=n; grandTotal+=n;
+      const label = [];
+      if(v.trays) label.push(`${v.trays}T`);
+      if(v.pcs)   label.push(`${v.pcs}pc`);
+      return `<td class="${n===0?'zero':''}">${label.join('+') || '—'}</td>`;
     }).join('');
-  }
+    return `<tr><td>${fmtDate(d)}</td>${cells}<td><strong>${rowTotal||'—'}</strong></td></tr>`;
+  }).join('');
+
+  foot.innerHTML = `<tr><td>Total</td>${SIZES.map(s=>`<td>${totals[s]||'—'}</td>`).join('')}<td>${grandTotal}</td></tr>`;
 }
 
-// ─── INIT ───────────────────────────────────────────────────────────────────
-document.getElementById('sale-date').value = today();
-render();
+// ─── POS ─────────────────────────────────────────────────────────────────────
+function renderPOS(){
+  // farm select
+  const sel = document.getElementById('pos-farm-select');
+  sel.innerHTML = FARMS.map(i=>`<option value="${i}">${farmNames[i]}</option>`).join('');
+
+  // size buttons
+  const grid = document.getElementById('pos-sizes');
+  grid.innerHTML = SIZES.map(s=>`
+    <button class="size-btn ${posSelected===s?'selected':''}" onclick="selectSize('${s}')">
+      <span class="sname">${s}</span>
+      <span class="sprice">${fmtP(prices[s]?.pcs||0)}/pc · ${fmtP(prices[s]?.tray||0)}/tray</span>
+    </button>
+  `).join('');
+  updatePOSDisplay();
+}
+
+function selectSize(s){
+  posSelected = s;
+  renderPOS();
+}
+
+function selectUnit(u){
+  posUnit = u;
+  document.getElementById('unit-pcs').classList.toggle('selected', u==='pcs');
+  document.getElementById('unit-tray').classList.toggle('selected', u==='tray');
+  document.getElementById('qty-unit-label').textContent = u==='pcs' ? 'pcs' : 'tray(s)';
+  updatePOSDisplay();
+}
+
+function numpad(v){
+  if(v==='del')        posQtyStr = posQtyStr.slice(0,-1);
+  else if(v==='clear') posQtyStr = '';
+  else                 posQtyStr = (posQtyStr+v).replace(/^0+/,'').slice(0,4);
+  updatePOSDisplay();
+}
+
+function updatePOSDisplay(){
+  const qty = parseInt(posQtyStr)||0;
+  document.getElementById('qty-display').innerHTML =
+    `${qty||0}<span class="qty-unit-label">${posUnit==='pcs'?'pcs':'tray(s)'}</span>`;
+  const ok = posSelected && qty > 0;
+  document.getElementById('btn-add-cart').disabled = !ok;
+}
+
+function addToCart(){
+  const qty  = parseInt(posQtyStr)||0;
+  if(!posSelected || qty===0) return;
+  const pcsTotal = posUnit==='pcs' ? qty : qty*TRAY;
+  const unitPrice = posUnit==='pcs' ? (prices[posSelected]?.pcs||0) : (prices[posSelected]?.tray||0);
+  const total = qty * unitPrice;
+  cart.push({ size:posSelected, unit:posUnit, qty, pcsTotal, unitPrice, total, id:Date.now() });
+  posQtyStr = '';
+  updatePOSDisplay();
+  renderCart();
+  toast(`Added ${qty} ${posUnit==='tray'?'tray(s)':'pcs'} of ${posSelected}`);
+}
+
+function renderCart(){
+  const container = document.getElementById('cart-items');
+  if(cart.length===0){
+    container.innerHTML='<div class="cart-empty">No items yet</div>';
+    document.getElementById('cart-total').textContent='₱0.00';
+    document.getElementById('btn-charge').disabled=true;
+    return;
+  }
+  container.innerHTML = cart.map(item=>`
+    <div class="cart-item">
+      <div>
+        <div class="ci-name">${item.size}</div>
+        <div class="ci-detail">${item.qty} ${item.unit==='tray'?'tray(s) ('+item.pcsTotal+' pcs)':'pcs'} × ${fmtP(item.unitPrice)}</div>
+      </div>
+      <div style="display:flex;align-items:center;gap:.5rem">
+        <span class="ci-price">${fmtP(item.total)}</span>
+        <button class="btn-sm" onclick="removeCartItem(${item.id})">✕</button>
+      </div>
+    </div>
+  `).join('');
+  const total = cart.reduce((s,c)=>s+c.total,0);
+  document.getElementById('cart-total').textContent = fmtP(total);
+  document.getElementById('btn-charge').disabled = false;
+}
+
+function removeCartItem(id){
+  cart = cart.filter(c=>c.id!==id);
+  renderCart();
+}
+
+function clearCart(){
+  cart = [];
+  renderCart();
+}
+
+function chargeOrder(){
+  if(cart.length===0) return;
+  const farmIdx = parseInt(document.getElementById('pos-farm-select').value);
+  const dateStr = today();
+  cart.forEach(item=>{
+    sales.push({
+      id: Date.now()+Math.random(),
+      date: dateStr,
+      farmIdx,
+      size: item.size,
+      unit: item.unit,
+      qty: item.qty,
+      pcsTotal: item.pcsTotal,
+      unitPrice: item.unitPrice,
+      total: item.total,
+    });
+  });
+  save('sales', sales);
+  const grandTotal = cart.reduce((s,c)=>s+c.total,0);
+  toast(`Charged ${fmtP(grandTotal)} from ${farmNames[farmIdx]}`);
+  cart = [];
+  renderCart();
+}
+
+// ─── HISTORY ─────────────────────────────────────────────────────────────────
+function renderHistoryFilters(){
+  // farm filter
+  const fs = document.getElementById('hist-farm-filter');
+  const curFarm = fs.value;
+  fs.innerHTML = `<option value="all">All Farms</option>${FARMS.map(i=>`<option value="${i}">${farmNames[i]}</option>`).join('')}`;
+  fs.value = curFarm;
+
+  // month filter — gather all months
+  const months = new Set();
+  sales.forEach(s=>months.add(monthKey(s.date)));
+  FARMS.forEach(fi=>{
+    Object.keys(inventory[fi]||{}).forEach(d=>months.add(monthKey(d)));
+  });
+  const sorted = [...months].sort().reverse();
+  const ms = document.getElementById('hist-month-filter');
+  const cur = ms.value || (sorted[0]||monthKey(today()));
+  ms.innerHTML = sorted.map(m=>`<option value="${m}" ${m===cur?'selected':''}>${fmtMonth(m)}</option>`).join('');
+  if(!ms.value && sorted.length) ms.value = sorted[0];
+}
+
+function renderHistory(){
+  const farmF  = document.getElementById('hist-farm-filter').value;
+  const typeF  = document.getElementById('hist-type-filter').value;
+  const monthF = document.getElementById('hist-month-filter').value || monthKey(today());
+
+  // build rows
+  const rows = [];
+
+  // inventory rows
+  if(typeF==='all'||typeF==='inventory'){
+    FARMS.forEach(fi=>{
+      if(farmF!=='all' && farmF!=String(fi)) return;
+      const farmData = inventory[fi]||{};
+      Object.keys(farmData).filter(d=>monthKey(d)===monthF).forEach(d=>{
+        const day = farmData[d];
+        SIZES.forEach(size=>{
+          const v = day[size]||{trays:0,pcs:0};
+          const n = v.trays*TRAY+v.pcs;
+          if(n>0) rows.push({ date:d, type:'inventory', farmIdx:fi, size, qty:n, total:null });
+        });
+      });
+    });
+  }
+
+  // sales rows
+  if(typeF==='all'||typeF==='sale'){
+    sales.filter(s=>{
+      if(monthKey(s.date)!==monthF) return false;
+      if(farmF!=='all' && farmF!=String(s.farmIdx)) return false;
+      return true;
+    }).forEach(s=>{
+      rows.push({ date:s.date, type:'sale', farmIdx:s.farmIdx, size:s.size, qty:s.pcsTotal, total:s.total });
+    });
+  }
+
+  rows.sort((a,b)=>b.date.localeCompare(a.date));
+
+  // stats
+  const totalInv  = rows.filter(r=>r.type==='inventory').reduce((s,r)=>s+r.qty,0);
+  const totalSold = rows.filter(r=>r.type==='sale').reduce((s,r)=>s+r.qty,0);
+  const totalRev  = rows.filter(r=>r.type==='sale').reduce((s,r)=>s+r.total,0);
+  document.getElementById('hist-stats').innerHTML = `
+    <div class="stat-card"><div class="sc-label">Eggs Collected</div><div class="sc-val">${totalInv.toLocaleString()}</div><div class="sc-sub">pieces</div></div>
+    <div class="stat-card"><div class="sc-label">Eggs Sold</div><div class="sc-val">${totalSold.toLocaleString()}</div><div class="sc-sub">pieces</div></div>
+    <div class="stat-card"><div class="sc-label">Revenue</div><div class="sc-val" style="font-size:1.2rem">${fmtP(totalRev)}</div><div class="sc-sub">this period</div></div>
+  `;
+
+  const body = document.getElementById('hist-body');
+  if(rows.length===0){
+    body.innerHTML=`<tr><td colspan="6"><div class="empty"><div class="empty-icon">📅</div>No records for this period</div></td></tr>`;
+    return;
+  }
+  body.innerHTML = rows.map(r=>`<tr>
+    <td>${fmtDate(r.date)}</td>
+    <td><span class="badge ${r.type==='sale'?'badge-sale':'badge-inv'}">${r.type==='sale'?'Sale':'Collection'}</span></td>
+    <td>${farmNames[r.farmIdx]}</td>
+    <td>${r.size}</td>
+    <td>${r.qty.toLocaleString()}</td>
+    <td>${r.total!==null?fmtP(r.total):'—'}</td>
+  </tr>`).join('');
+}
+
+// ─── SETTINGS ────────────────────────────────────────────────────────────────
+function renderSettings(){
+  // farm names
+  document.getElementById('farm-name-grid').innerHTML = FARMS.map(i=>`
+    <div class="farm-name-wrap">
+      <label>Farm ${i+1}</label>
+      <input type="text" id="fname-${i}" value="${farmNames[i]}" placeholder="Farm ${i+1}"/>
+    </div>
+  `).join('');
+
+  // prices
+  document.getElementById('price-grid').innerHTML = SIZES.map(s=>`
+    <div class="price-card">
+      <label>${s}</label>
+      <div class="price-inputs">
+        <div class="price-input-wrap">
+          <div class="price-sub">Per Piece</div>
+          <input type="number" min="0" step="0.01" id="price-${s}-pcs" value="${prices[s]?.pcs||0}" placeholder="0.00"/>
+        </div>
+        <div class="price-input-wrap">
+          <div class="price-sub">Per Tray</div>
+          <input type="number" min="0" step="0.01" id="price-${s}-tray" value="${prices[s]?.tray||0}" placeholder="0.00"/>
+        </div>
+      </div>
+    </div>
+  `).join('');
+}
+
+function saveSettings(){
+  FARMS.forEach(i=>{
+    const v = document.getElementById(`fname-${i}`)?.value.trim();
+    if(v) farmNames[i]=v;
+  });
+  SIZES.forEach(s=>{
+    prices[s] = {
+      pcs:  parseFloat(document.getElementById(`price-${s}-pcs`)?.value)||0,
+      tray: parseFloat(document.getElementById(`price-${s}-tray`)?.value)||0,
+    };
+  });
+  save('farmNames', farmNames);
+  save('prices', prices);
+  toast('Settings saved!');
+}
+
+// ─── INIT ─────────────────────────────────────────────────────────────────────
+document.getElementById('inv-date').value = today();
+renderInventoryPage();
 </script>
 </body>
 </html>
