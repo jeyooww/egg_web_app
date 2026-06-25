@@ -1,0 +1,623 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Egg Tracker</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap');
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:        #F7F3EC;
+      --surface:   #FFFFFF;
+      --header:    #1C1A16;
+      --text:      #2C2A25;
+      --muted:     #8A8070;
+      --amber:     #D97706;
+      --amber-lt:  #FDE68A;
+      --green:     #16A34A;
+      --green-lt:  #DCFCE7;
+      --red:       #DC2626;
+      --red-lt:    #FEE2E2;
+      --border:    #E5DDD0;
+      --mono:      'JetBrains Mono', monospace;
+      --sans:      'Inter', sans-serif;
+    }
+
+    body {
+      font-family: var(--sans);
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+    }
+
+    /* HEADER */
+    header {
+      background: var(--header);
+      color: #fff;
+      padding: 0 2rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      height: 56px;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+    .logo { display: flex; align-items: center; gap: .6rem; font-weight: 600; font-size: 1rem; letter-spacing: -.01em; }
+    .logo-egg { font-size: 1.4rem; }
+    .nav-tabs { display: flex; gap: .25rem; }
+    .tab-btn {
+      background: none; border: none; color: rgba(255,255,255,.55);
+      font: 500 .85rem var(--sans); padding: .4rem .9rem; border-radius: 6px;
+      cursor: pointer; transition: all .15s;
+    }
+    .tab-btn.active { background: rgba(255,255,255,.12); color: #fff; }
+    .tab-btn:hover:not(.active) { color: rgba(255,255,255,.85); }
+
+    /* MAIN */
+    main { max-width: 900px; margin: 0 auto; padding: 2rem 1.5rem 4rem; }
+
+    /* PAGES */
+    .page { display: none; }
+    .page.active { display: block; }
+
+    /* TALLY COUNTER — signature element */
+    .tally-card {
+      background: var(--header);
+      color: #fff;
+      border-radius: 16px;
+      padding: 2rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1.5rem;
+      margin-bottom: 1.5rem;
+    }
+    .tally-label { font-size: .8rem; text-transform: uppercase; letter-spacing: .1em; color: rgba(255,255,255,.45); margin-bottom: .4rem; }
+    .tally-number {
+      font-family: var(--mono);
+      font-size: 4rem;
+      font-weight: 600;
+      letter-spacing: -.04em;
+      color: #fff;
+      line-height: 1;
+    }
+    .tally-unit { font-size: .9rem; color: rgba(255,255,255,.45); margin-top: .3rem; }
+    .tally-actions { display: flex; flex-direction: column; gap: .5rem; }
+    .tally-btn {
+      font-family: var(--sans); font-size: .85rem; font-weight: 600;
+      border: none; border-radius: 8px; padding: .55rem 1.2rem;
+      cursor: pointer; transition: all .12s; white-space: nowrap;
+    }
+    .tally-btn.add { background: var(--amber); color: #fff; }
+    .tally-btn.add:hover { background: #B45309; }
+    .tally-btn.remove { background: rgba(255,255,255,.1); color: rgba(255,255,255,.8); }
+    .tally-btn.remove:hover { background: rgba(255,255,255,.18); }
+
+    /* SECTION GRID */
+    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem; }
+    @media (max-width: 580px) { .grid-2 { grid-template-columns: 1fr; } .tally-card { flex-direction: column; align-items: flex-start; } .tally-number { font-size: 3rem; } }
+
+    /* CARD */
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 1.25rem 1.5rem;
+    }
+    .card-title { font-size: .75rem; text-transform: uppercase; letter-spacing: .09em; color: var(--muted); margin-bottom: .5rem; }
+    .stat-val { font-family: var(--mono); font-size: 1.9rem; font-weight: 600; line-height: 1.1; }
+    .stat-sub { font-size: .8rem; color: var(--muted); margin-top: .25rem; }
+
+    /* FORM */
+    .form-card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 1.5rem; margin-bottom: 1.5rem; }
+    .form-title { font-weight: 600; font-size: 1rem; margin-bottom: 1.25rem; }
+    .form-row { display: flex; gap: .75rem; flex-wrap: wrap; }
+    .form-group { display: flex; flex-direction: column; gap: .35rem; flex: 1; min-width: 140px; }
+    label { font-size: .8rem; font-weight: 500; color: var(--muted); }
+    input, select {
+      font: 400 .9rem var(--sans);
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: .55rem .75rem;
+      color: var(--text);
+      outline: none;
+      transition: border .12s;
+      width: 100%;
+    }
+    input:focus, select:focus { border-color: var(--amber); }
+    .btn-primary {
+      background: var(--amber); color: #fff; border: none;
+      font: 600 .9rem var(--sans); border-radius: 8px;
+      padding: .6rem 1.5rem; cursor: pointer; transition: background .12s;
+      align-self: flex-end; white-space: nowrap; height: 38px;
+    }
+    .btn-primary:hover { background: #B45309; }
+    .btn-sm {
+      font: 500 .78rem var(--sans); border: 1px solid var(--border);
+      background: var(--bg); border-radius: 6px; padding: .3rem .65rem;
+      cursor: pointer; color: var(--red); transition: all .12s;
+    }
+    .btn-sm:hover { background: var(--red-lt); border-color: var(--red); }
+
+    /* TABLE */
+    .table-wrap { overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; font-size: .88rem; }
+    thead th { text-align: left; font-size: .72rem; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); padding: .6rem .75rem; border-bottom: 1px solid var(--border); font-weight: 500; }
+    tbody tr { border-bottom: 1px solid var(--border); }
+    tbody tr:last-child { border-bottom: none; }
+    tbody td { padding: .75rem .75rem; vertical-align: middle; }
+    .badge { display: inline-block; font-size: .72rem; font-weight: 600; padding: .2rem .55rem; border-radius: 99px; }
+    .badge-green { background: var(--green-lt); color: var(--green); }
+    .badge-amber { background: var(--amber-lt); color: #92400E; }
+    .badge-red   { background: var(--red-lt);   color: var(--red); }
+    .mono { font-family: var(--mono); }
+
+    /* EMPTY STATE */
+    .empty { text-align: center; padding: 3rem 1rem; color: var(--muted); font-size: .9rem; }
+    .empty-icon { font-size: 2.5rem; margin-bottom: .5rem; }
+
+    /* LOW STOCK WARNING */
+    .alert { background: var(--red-lt); border: 1px solid #FECACA; border-radius: 10px; padding: .85rem 1.1rem; display: flex; align-items: center; gap: .65rem; font-size: .87rem; color: var(--red); margin-bottom: 1rem; }
+    .alert-icon { font-size: 1.1rem; }
+    .alert.hidden { display: none; }
+
+    /* SECTION LABEL */
+    .section-label { font-weight: 600; font-size: .95rem; margin: 1.5rem 0 .75rem; }
+
+    /* HISTORY FILTER */
+    .filter-row { display: flex; align-items: center; gap: .75rem; margin-bottom: .75rem; flex-wrap: wrap; }
+    .filter-row label { font-size: .8rem; color: var(--muted); font-weight: 500; }
+    .filter-row select { max-width: 160px; height: 34px; padding: .3rem .65rem; }
+
+    /* SUMMARY ROW */
+    .summary-row { background: var(--bg); border-radius: 8px; padding: .65rem .75rem; display: flex; justify-content: space-between; align-items: center; font-size: .85rem; margin-top: .5rem; }
+    .summary-row strong { font-family: var(--mono); font-size: .95rem; }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="logo"><span class="logo-egg">🥚</span> Egg Tracker</div>
+  <nav class="nav-tabs">
+    <button class="tab-btn active" onclick="showPage('inventory')">Inventory</button>
+    <button class="tab-btn" onclick="showPage('sales')">Sales</button>
+    <button class="tab-btn" onclick="showPage('history')">History</button>
+  </nav>
+</header>
+
+<main>
+
+  <!-- ═══════════════════════ INVENTORY PAGE ═══════════════════════ -->
+  <div class="page active" id="page-inventory">
+
+    <div class="alert hidden" id="low-stock-alert">
+      <span class="alert-icon">⚠️</span>
+      <span id="low-stock-msg">Stock is running low.</span>
+    </div>
+
+    <div class="tally-card">
+      <div>
+        <div class="tally-label">Current Stock</div>
+        <div class="tally-number" id="stock-display">0</div>
+        <div class="tally-unit">eggs on hand</div>
+      </div>
+      <div class="tally-actions">
+        <button class="tally-btn add" onclick="openAddStock()">+ Add Stock</button>
+        <button class="tally-btn remove" onclick="openAdjust()">Adjust Count</button>
+      </div>
+    </div>
+
+    <div class="grid-2">
+      <div class="card">
+        <div class="card-title">Added This Month</div>
+        <div class="stat-val mono" id="added-month">0</div>
+        <div class="stat-sub">eggs collected</div>
+      </div>
+      <div class="card">
+        <div class="card-title">Sold This Month</div>
+        <div class="stat-val mono" id="sold-month">0</div>
+        <div class="stat-sub">eggs sold</div>
+      </div>
+    </div>
+
+    <!-- Add Stock Form -->
+    <div class="form-card" id="add-stock-form" style="display:none">
+      <div class="form-title">Add Egg Collection</div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Quantity</label>
+          <input type="number" id="add-qty" min="1" placeholder="e.g. 24" />
+        </div>
+        <div class="form-group">
+          <label>Date</label>
+          <input type="date" id="add-date" />
+        </div>
+        <div class="form-group">
+          <label>Note (optional)</label>
+          <input type="text" id="add-note" placeholder="e.g. Morning collection" />
+        </div>
+        <button class="btn-primary" onclick="addStock()">Save</button>
+      </div>
+    </div>
+
+    <!-- Adjust Form -->
+    <div class="form-card" id="adjust-form" style="display:none">
+      <div class="form-title">Manual Adjustment</div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Set Stock To</label>
+          <input type="number" id="adjust-qty" min="0" placeholder="New total" />
+        </div>
+        <div class="form-group">
+          <label>Reason</label>
+          <input type="text" id="adjust-reason" placeholder="e.g. Breakage, recount…" />
+        </div>
+        <button class="btn-primary" onclick="adjustStock()">Update</button>
+      </div>
+    </div>
+
+    <div class="section-label">Collection History</div>
+    <div class="card">
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Date</th><th>Qty</th><th>Note</th><th></th></tr></thead>
+          <tbody id="collection-tbody">
+            <tr><td colspan="4"><div class="empty"><div class="empty-icon">🥚</div>No collections yet</div></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════ SALES PAGE ═══════════════════════ -->
+  <div class="page" id="page-sales">
+
+    <div class="form-card">
+      <div class="form-title">Record a Sale</div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Quantity Sold</label>
+          <input type="number" id="sale-qty" min="1" placeholder="e.g. 12" />
+        </div>
+        <div class="form-group">
+          <label>Price per Egg (₱)</label>
+          <input type="number" id="sale-price" min="0" step="0.01" placeholder="e.g. 8.50" />
+        </div>
+        <div class="form-group">
+          <label>Customer (optional)</label>
+          <input type="text" id="sale-customer" placeholder="Name or label" />
+        </div>
+        <div class="form-group">
+          <label>Date</label>
+          <input type="date" id="sale-date" />
+        </div>
+        <button class="btn-primary" onclick="recordSale()">Record Sale</button>
+      </div>
+    </div>
+
+    <div class="grid-2" style="margin-bottom:1.5rem">
+      <div class="card">
+        <div class="card-title">Revenue This Month</div>
+        <div class="stat-val mono" id="revenue-month">₱0.00</div>
+        <div class="stat-sub" id="revenue-txn-count">0 transactions</div>
+      </div>
+      <div class="card">
+        <div class="card-title">Avg Price / Egg</div>
+        <div class="stat-val mono" id="avg-price">₱0.00</div>
+        <div class="stat-sub">this month</div>
+      </div>
+    </div>
+
+    <div class="section-label">Sales Log</div>
+    <div class="card">
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Date</th><th>Qty</th><th>Price/Egg</th><th>Total</th><th>Customer</th><th></th></tr></thead>
+          <tbody id="sales-tbody">
+            <tr><td colspan="6"><div class="empty"><div class="empty-icon">📋</div>No sales yet</div></td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="summary-row" id="sales-summary" style="display:none">
+        <span>Total Revenue</span>
+        <strong id="sales-total-val">₱0.00</strong>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════ HISTORY PAGE ═══════════════════════ -->
+  <div class="page" id="page-history">
+    <div class="filter-row">
+      <label>Filter by month:</label>
+      <select id="history-month-filter" onchange="renderHistory()"></select>
+    </div>
+
+    <div class="grid-2">
+      <div class="card">
+        <div class="card-title">Eggs Collected</div>
+        <div class="stat-val mono" id="hist-collected">0</div>
+      </div>
+      <div class="card">
+        <div class="card-title">Eggs Sold</div>
+        <div class="stat-val mono" id="hist-sold">0</div>
+      </div>
+      <div class="card">
+        <div class="card-title">Revenue</div>
+        <div class="stat-val mono" id="hist-revenue">₱0.00</div>
+      </div>
+      <div class="card">
+        <div class="card-title">Net Stock Change</div>
+        <div class="stat-val mono" id="hist-net">0</div>
+      </div>
+    </div>
+
+    <div class="section-label">All Events</div>
+    <div class="card">
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Date</th><th>Type</th><th>Qty</th><th>Detail</th></tr></thead>
+          <tbody id="history-tbody">
+            <tr><td colspan="4"><div class="empty"><div class="empty-icon">📅</div>No records yet</div></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+</main>
+
+<script>
+// ─── STATE ─────────────────────────────────────────────────────────────────
+const LOW_STOCK_THRESHOLD = 12;
+
+function loadState() {
+  return {
+    stock: parseInt(localStorage.getItem('egg_stock') || '0'),
+    collections: JSON.parse(localStorage.getItem('egg_collections') || '[]'),
+    sales:       JSON.parse(localStorage.getItem('egg_sales')       || '[]'),
+  };
+}
+
+function saveState(state) {
+  localStorage.setItem('egg_stock',       state.stock);
+  localStorage.setItem('egg_collections', JSON.stringify(state.collections));
+  localStorage.setItem('egg_sales',       JSON.stringify(state.sales));
+}
+
+let state = loadState();
+
+// ─── HELPERS ───────────────────────────────────────────────────────────────
+const today = () => new Date().toISOString().split('T')[0];
+const fmtDate = d => { const [y,m,dd] = d.split('-'); return `${dd}/${m}/${y}`; };
+const fmtPeso = n => '₱' + Number(n).toFixed(2);
+const currentMonthKey = () => { const n = new Date(); return `${n.getFullYear()}-${String(n.getMonth()+1).padStart(2,'0')}`; };
+const entryMonth = d => d.slice(0,7);
+
+// ─── NAVIGATION ────────────────────────────────────────────────────────────
+function showPage(name) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('page-' + name).classList.add('active');
+  event.currentTarget.classList.add('active');
+  if (name === 'history') { populateMonthFilter(); renderHistory(); }
+}
+
+// ─── INVENTORY ─────────────────────────────────────────────────────────────
+function openAddStock() {
+  const f = document.getElementById('add-stock-form');
+  const a = document.getElementById('adjust-form');
+  f.style.display = f.style.display === 'none' ? 'block' : 'none';
+  a.style.display = 'none';
+  document.getElementById('add-date').value = today();
+}
+function openAdjust() {
+  const f = document.getElementById('adjust-form');
+  const a = document.getElementById('add-stock-form');
+  f.style.display = f.style.display === 'none' ? 'block' : 'none';
+  a.style.display = 'none';
+  document.getElementById('adjust-qty').value = state.stock;
+}
+
+function addStock() {
+  const qty  = parseInt(document.getElementById('add-qty').value);
+  const date = document.getElementById('add-date').value;
+  const note = document.getElementById('add-note').value.trim();
+  if (!qty || qty < 1 || !date) { alert('Please enter a valid quantity and date.'); return; }
+  state.stock += qty;
+  state.collections.unshift({ id: Date.now(), date, qty, note });
+  saveState(state);
+  document.getElementById('add-qty').value = '';
+  document.getElementById('add-note').value = '';
+  document.getElementById('add-stock-form').style.display = 'none';
+  render();
+}
+
+function adjustStock() {
+  const qty    = parseInt(document.getElementById('adjust-qty').value);
+  const reason = document.getElementById('adjust-reason').value.trim();
+  if (isNaN(qty) || qty < 0) { alert('Please enter a valid number.'); return; }
+  const diff = qty - state.stock;
+  state.stock = qty;
+  if (diff !== 0) {
+    state.collections.unshift({ id: Date.now(), date: today(), qty: diff, note: 'Adjustment: ' + (reason || 'manual recount'), adjust: true });
+  }
+  saveState(state);
+  document.getElementById('adjust-form').style.display = 'none';
+  render();
+}
+
+function deleteCollection(id) {
+  const item = state.collections.find(c => c.id === id);
+  if (!item) return;
+  if (!confirm(`Delete this collection of ${Math.abs(item.qty)} eggs?`)) return;
+  state.stock -= item.qty;
+  if (state.stock < 0) state.stock = 0;
+  state.collections = state.collections.filter(c => c.id !== id);
+  saveState(state);
+  render();
+}
+
+// ─── SALES ─────────────────────────────────────────────────────────────────
+function recordSale() {
+  const qty      = parseInt(document.getElementById('sale-qty').value);
+  const price    = parseFloat(document.getElementById('sale-price').value);
+  const customer = document.getElementById('sale-customer').value.trim();
+  const date     = document.getElementById('sale-date').value;
+  if (!qty || qty < 1 || isNaN(price) || price < 0 || !date) { alert('Please fill in qty, price, and date.'); return; }
+  if (qty > state.stock) { if (!confirm(`Only ${state.stock} eggs in stock. Record anyway?`)) return; }
+  state.stock = Math.max(0, state.stock - qty);
+  state.sales.unshift({ id: Date.now(), date, qty, price, customer });
+  saveState(state);
+  document.getElementById('sale-qty').value    = '';
+  document.getElementById('sale-price').value  = '';
+  document.getElementById('sale-customer').value = '';
+  render();
+}
+
+function deleteSale(id) {
+  const sale = state.sales.find(s => s.id === id);
+  if (!sale) return;
+  if (!confirm(`Delete sale of ${sale.qty} eggs?`)) return;
+  state.stock += sale.qty;
+  state.sales = state.sales.filter(s => s.id !== id);
+  saveState(state);
+  render();
+}
+
+// ─── RENDER ────────────────────────────────────────────────────────────────
+function render() {
+  const mk = currentMonthKey();
+
+  // Stock display
+  document.getElementById('stock-display').textContent = state.stock.toLocaleString();
+
+  // Low stock alert
+  const alert = document.getElementById('low-stock-alert');
+  if (state.stock <= LOW_STOCK_THRESHOLD) {
+    alert.classList.remove('hidden');
+    document.getElementById('low-stock-msg').textContent =
+      `Stock is low — only ${state.stock} egg${state.stock !== 1 ? 's' : ''} remaining.`;
+  } else { alert.classList.add('hidden'); }
+
+  // Month stats
+  const monthCollections = state.collections.filter(c => entryMonth(c.date) === mk && !c.adjust);
+  const addedMonth = monthCollections.reduce((s,c) => s + (c.qty > 0 ? c.qty : 0), 0);
+  document.getElementById('added-month').textContent = addedMonth.toLocaleString();
+
+  const monthSales = state.sales.filter(s => entryMonth(s.date) === mk);
+  const soldMonth  = monthSales.reduce((s,c) => s + c.qty, 0);
+  document.getElementById('sold-month').textContent = soldMonth.toLocaleString();
+
+  // Collections table
+  const ctbody = document.getElementById('collection-tbody');
+  if (state.collections.length === 0) {
+    ctbody.innerHTML = `<tr><td colspan="4"><div class="empty"><div class="empty-icon">🥚</div>No collections yet</div></td></tr>`;
+  } else {
+    ctbody.innerHTML = state.collections.map(c => `
+      <tr>
+        <td>${fmtDate(c.date)}</td>
+        <td class="mono">${c.qty > 0 ? '+' : ''}${c.qty}</td>
+        <td style="color:var(--muted);font-size:.83rem">${c.note || '—'}</td>
+        <td><button class="btn-sm" onclick="deleteCollection(${c.id})">Delete</button></td>
+      </tr>`).join('');
+  }
+
+  // Sales revenue stats
+  const revMonth  = monthSales.reduce((s,c) => s + c.qty * c.price, 0);
+  const avgPrice  = monthSales.length ? monthSales.reduce((s,c) => s + c.price, 0) / monthSales.length : 0;
+  document.getElementById('revenue-month').textContent   = fmtPeso(revMonth);
+  document.getElementById('revenue-txn-count').textContent = `${monthSales.length} transaction${monthSales.length !== 1 ? 's' : ''}`;
+  document.getElementById('avg-price').textContent       = fmtPeso(avgPrice);
+
+  // Sales table
+  const stbody = document.getElementById('sales-tbody');
+  if (state.sales.length === 0) {
+    stbody.innerHTML = `<tr><td colspan="6"><div class="empty"><div class="empty-icon">📋</div>No sales yet</div></td></tr>`;
+    document.getElementById('sales-summary').style.display = 'none';
+  } else {
+    const totalRevenue = state.sales.reduce((s,c) => s + c.qty * c.price, 0);
+    stbody.innerHTML = state.sales.map(s => `
+      <tr>
+        <td>${fmtDate(s.date)}</td>
+        <td class="mono">${s.qty}</td>
+        <td class="mono">${fmtPeso(s.price)}</td>
+        <td class="mono" style="font-weight:600">${fmtPeso(s.qty * s.price)}</td>
+        <td style="color:var(--muted);font-size:.83rem">${s.customer || '—'}</td>
+        <td><button class="btn-sm" onclick="deleteSale(${s.id})">Delete</button></td>
+      </tr>`).join('');
+    document.getElementById('sales-summary').style.display = 'flex';
+    document.getElementById('sales-total-val').textContent = fmtPeso(totalRevenue);
+  }
+}
+
+// ─── HISTORY ───────────────────────────────────────────────────────────────
+function populateMonthFilter() {
+  const all = new Set([
+    ...state.collections.map(c => entryMonth(c.date)),
+    ...state.sales.map(s => entryMonth(s.date)),
+  ]);
+  const months = [...all].sort().reverse();
+  const sel = document.getElementById('history-month-filter');
+  const cur = sel.value || currentMonthKey();
+  sel.innerHTML = months.length
+    ? months.map(m => `<option value="${m}" ${m===cur?'selected':''}>${fmtMonthLabel(m)}</option>`).join('')
+    : `<option value="${currentMonthKey()}">${fmtMonthLabel(currentMonthKey())}</option>`;
+}
+
+function fmtMonthLabel(mk) {
+  const [y,m] = mk.split('-');
+  return new Date(y, m-1).toLocaleDateString('en-PH', {month:'long', year:'numeric'});
+}
+
+function renderHistory() {
+  const mk = document.getElementById('history-month-filter').value || currentMonthKey();
+  const cols  = state.collections.filter(c => entryMonth(c.date) === mk);
+  const sales = state.sales.filter(s => entryMonth(s.date) === mk);
+
+  const collected = cols.reduce((s,c) => s + (c.qty > 0 && !c.adjust ? c.qty : 0), 0);
+  const sold      = sales.reduce((s,c) => s + c.qty, 0);
+  const revenue   = sales.reduce((s,c) => s + c.qty * c.price, 0);
+  const net       = collected - sold;
+
+  document.getElementById('hist-collected').textContent = collected.toLocaleString();
+  document.getElementById('hist-sold').textContent      = sold.toLocaleString();
+  document.getElementById('hist-revenue').textContent   = fmtPeso(revenue);
+  document.getElementById('hist-net').textContent       = (net >= 0 ? '+' : '') + net;
+
+  const all = [
+    ...cols.map(c => ({ date: c.date, type: c.adjust ? 'adjust' : 'collection', qty: c.qty, detail: c.note || '—' })),
+    ...sales.map(s => ({ date: s.date, type: 'sale', qty: s.qty, detail: (s.customer || '—') + ' · ' + fmtPeso(s.price) + '/egg' })),
+  ].sort((a,b) => b.date.localeCompare(a.date));
+
+  const tbody = document.getElementById('history-tbody');
+  if (all.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="4"><div class="empty"><div class="empty-icon">📅</div>No records for this month</div></td></tr>`;
+  } else {
+    tbody.innerHTML = all.map(e => {
+      const badge = e.type === 'sale'
+        ? `<span class="badge badge-amber">Sale</span>`
+        : e.type === 'adjust'
+        ? `<span class="badge badge-red">Adjust</span>`
+        : `<span class="badge badge-green">Collection</span>`;
+      const qtyFmt = e.type === 'sale' ? `-${e.qty}` : (e.qty > 0 ? `+${e.qty}` : `${e.qty}`);
+      return `<tr>
+        <td>${fmtDate(e.date)}</td>
+        <td>${badge}</td>
+        <td class="mono">${qtyFmt}</td>
+        <td style="color:var(--muted);font-size:.83rem">${e.detail}</td>
+      </tr>`;
+    }).join('');
+  }
+}
+
+// ─── INIT ───────────────────────────────────────────────────────────────────
+document.getElementById('sale-date').value = today();
+render();
+</script>
+</body>
+</html>
