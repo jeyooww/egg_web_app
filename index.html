@@ -11,62 +11,67 @@
   --bg:#F5F1EA;--surface:#FFFFFF;--header:#1A1A18;--text:#26231C;
   --muted:#8C8070;--amber:#C97B00;--amber-lt:#FEF3C7;--amber-mid:#F59E0B;
   --green:#15803D;--green-lt:#DCFCE7;--red:#DC2626;--red-lt:#FEE2E2;
-  --blue:#1D4ED8;--blue-lt:#DBEAFE;--border:#E8DFD0;--mono:'JetBrains Mono',monospace;
+  --border:#E8DFD0;--mono:'JetBrains Mono',monospace;
   --sans:'Inter',sans-serif;--radius:10px;
 }
 body{font-family:var(--sans);background:var(--bg);color:var(--text);min-height:100vh;font-size:15px;}
 
-/* ── HEADER ── */
+/* HEADER */
 header{background:var(--header);color:#fff;padding:0 1.5rem;display:flex;align-items:center;justify-content:space-between;height:52px;position:sticky;top:0;z-index:200;}
-.logo{display:flex;align-items:center;gap:.5rem;font-weight:700;font-size:.95rem;letter-spacing:-.01em;}
+.logo{display:flex;align-items:center;gap:.5rem;font-weight:700;font-size:.95rem;}
 .logo span{opacity:.5;font-weight:400}
 nav{display:flex;gap:2px;}
 .nav-btn{background:none;border:none;color:rgba(255,255,255,.5);font:500 .82rem var(--sans);padding:.38rem .85rem;border-radius:6px;cursor:pointer;transition:all .15s;}
 .nav-btn.active{background:rgba(255,255,255,.13);color:#fff;}
 .nav-btn:hover:not(.active){color:rgba(255,255,255,.8);}
 
-/* ── LAYOUT ── */
+/* LAYOUT */
 main{max-width:1040px;margin:0 auto;padding:1.5rem 1.25rem 4rem;}
 .page{display:none;}.page.active{display:block;}
 
-/* ── FARM TABS ── */
+/* LOADING OVERLAY */
+.loading-bar{position:fixed;top:0;left:0;right:0;height:3px;background:var(--amber-mid);z-index:9999;transform:scaleX(0);transform-origin:left;transition:transform .3s;}
+.loading-bar.active{animation:loadpulse 1s ease-in-out infinite alternate;}
+@keyframes loadpulse{from{transform:scaleX(0.1)}to{transform:scaleX(0.9)}}
+.loading-bar.done{transform:scaleX(1);transition:transform .2s;}
+
+/* FARM TABS */
 .farm-tabs{display:flex;gap:6px;margin-bottom:1.25rem;flex-wrap:wrap;}
 .farm-tab{background:var(--surface);border:1.5px solid var(--border);border-radius:8px;padding:.45rem 1.1rem;font:600 .82rem var(--sans);cursor:pointer;transition:all .15s;color:var(--muted);}
 .farm-tab.active{border-color:var(--amber-mid);background:var(--amber-lt);color:#92400E;}
 
-/* ── DATE ROW ── */
+/* DATE ROW */
 .date-row{display:flex;align-items:center;gap:.75rem;margin-bottom:1.25rem;}
 .date-row label{font-size:.8rem;font-weight:500;color:var(--muted);}
 .date-row input{font:400 .88rem var(--mono);background:var(--surface);border:1.5px solid var(--border);border-radius:8px;padding:.4rem .75rem;color:var(--text);outline:none;}
 .date-row input:focus{border-color:var(--amber-mid);}
 
-/* ── EGG GRID (inventory input) ── */
+/* EGG GRID */
 .egg-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:.75rem;margin-bottom:1.25rem;}
 .egg-card{background:var(--surface);border:1.5px solid var(--border);border-radius:var(--radius);padding:1rem 1.1rem;}
 .egg-card-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:.65rem;}
-.egg-size-label{font-weight:700;font-size:.88rem;letter-spacing:.01em;}
+.egg-size-label{font-weight:700;font-size:.88rem;}
 .egg-badge{font-size:.68rem;font-weight:600;padding:.18rem .5rem;border-radius:99px;background:var(--amber-lt);color:#92400E;}
 .egg-inputs{display:grid;grid-template-columns:1fr 1fr;gap:.5rem;}
 .egg-input-wrap{display:flex;flex-direction:column;gap:.25rem;}
 .egg-input-wrap label{font-size:.7rem;font-weight:500;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;}
 .egg-input-wrap input{font:600 .95rem var(--mono);background:var(--bg);border:1.5px solid var(--border);border-radius:7px;padding:.4rem .6rem;color:var(--text);outline:none;width:100%;text-align:center;}
 .egg-input-wrap input:focus{border-color:var(--amber-mid);background:#fff;}
-.egg-input-wrap .subtotal{font:600 .78rem var(--mono);color:var(--amber);text-align:center;margin-top:.15rem;}
 
-/* ── SAVE ROW ── */
+/* SAVE ROW */
 .save-row{display:flex;align-items:center;justify-content:space-between;gap:1rem;flex-wrap:wrap;margin-bottom:1.5rem;}
 .save-row .total-preview{font:600 1rem var(--mono);color:var(--text);}
 .save-row .total-preview span{color:var(--muted);font-weight:400;font-size:.82rem;margin-right:.4rem;}
 .btn-primary{background:var(--amber-mid);color:#fff;border:none;font:600 .88rem var(--sans);border-radius:8px;padding:.6rem 1.5rem;cursor:pointer;transition:background .12s;}
 .btn-primary:hover{background:var(--amber);}
+.btn-primary:disabled{background:var(--border);cursor:not-allowed;}
 .btn-sm{font:500 .75rem var(--sans);border:1px solid var(--border);background:var(--bg);border-radius:6px;padding:.28rem .6rem;cursor:pointer;color:var(--red);transition:all .12s;}
 .btn-sm:hover{background:var(--red-lt);border-color:var(--red);}
 .btn-outline{font:500 .82rem var(--sans);border:1.5px solid var(--border);background:var(--surface);border-radius:8px;padding:.5rem 1.1rem;cursor:pointer;color:var(--text);transition:all .12s;}
 .btn-outline:hover{border-color:var(--amber-mid);}
 
-/* ── SUMMARY TABLE ── */
+/* CARD / TABLE */
 .card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:1.1rem 1.25rem;margin-bottom:1rem;}
-.card-title{font-size:.72rem;text-transform:uppercase;letter-spacing:.09em;color:var(--muted);margin-bottom:.75rem;font-weight:600;}
 .table-wrap{overflow-x:auto;}
 table{width:100%;border-collapse:collapse;font-size:.84rem;}
 thead th{text-align:left;font-size:.7rem;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);padding:.5rem .65rem;border-bottom:1.5px solid var(--border);font-weight:600;white-space:nowrap;}
@@ -79,72 +84,32 @@ tfoot td{padding:.6rem .65rem;font-family:var(--mono);font-size:.82rem;text-alig
 tfoot td:first-child{text-align:left;font-family:var(--sans);font-weight:700;}
 .zero{color:var(--border);}
 
-/* ══════════════════════════════════════
-   POS
-══════════════════════════════════════ */
-.pos-layout{display:grid;grid-template-columns:1fr 340px;gap:1rem;align-items:start;}
-@media(max-width:720px){.pos-layout{grid-template-columns:1fr;}}
-
-/* size picker */
-.pos-sizes{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:.6rem;margin-bottom:1rem;}
-.size-btn{background:var(--surface);border:2px solid var(--border);border-radius:var(--radius);padding:.9rem .75rem;cursor:pointer;transition:all .15s;text-align:center;}
+/* SALES */
+.sales-form{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:1.5rem;max-width:520px;margin-bottom:1.5rem;}
+.size-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:.5rem;margin-bottom:1.25rem;}
+@media(max-width:480px){.size-grid{grid-template-columns:repeat(3,1fr);}}
+.size-btn{background:var(--bg);border:2px solid var(--border);border-radius:8px;padding:.65rem .4rem;cursor:pointer;transition:all .15s;text-align:center;font:700 .88rem var(--sans);color:var(--text);}
 .size-btn:hover{border-color:var(--amber-mid);}
-.size-btn.selected{border-color:var(--amber-mid);background:var(--amber-lt);}
-.size-btn .sname{font-weight:700;font-size:.95rem;display:block;margin-bottom:.2rem;}
-.size-btn .sprice{font:600 .78rem var(--mono);color:var(--muted);}
-.size-btn.selected .sprice{color:#92400E;}
-
-/* unit toggle */
-.unit-toggle{display:flex;gap:.4rem;margin-bottom:1rem;}
-.unit-btn{flex:1;padding:.6rem;border-radius:8px;border:2px solid var(--border);background:var(--surface);font:600 .85rem var(--sans);cursor:pointer;transition:all .15s;text-align:center;}
+.size-btn.selected{border-color:var(--amber-mid);background:var(--amber-lt);color:#92400E;}
+.unit-toggle{display:flex;gap:.4rem;margin-bottom:1.25rem;}
+.unit-btn{flex:1;padding:.55rem;border-radius:8px;border:2px solid var(--border);background:var(--bg);font:600 .85rem var(--sans);cursor:pointer;transition:all .15s;text-align:center;}
 .unit-btn.selected{border-color:var(--amber-mid);background:var(--amber-lt);color:#92400E;}
+.sales-qty-row{display:flex;align-items:center;gap:.75rem;margin-bottom:1.25rem;}
+.sales-qty-row label{font-size:.8rem;font-weight:500;color:var(--muted);white-space:nowrap;}
+.sales-qty-row input{font:700 1.1rem var(--mono);background:var(--bg);border:2px solid var(--border);border-radius:8px;padding:.5rem .75rem;color:var(--text);outline:none;width:110px;text-align:center;}
+.sales-qty-row input:focus{border-color:var(--amber-mid);}
+.sales-preview{font:600 .88rem var(--sans);color:var(--muted);flex:1;}
+.sales-preview strong{color:var(--text);}
+.btn-record{width:100%;background:var(--header);color:#fff;border:none;font:700 .95rem var(--sans);border-radius:8px;padding:.75rem;cursor:pointer;transition:background .12s;}
+.btn-record:hover{background:#333;}
+.btn-record:disabled{background:var(--border);cursor:not-allowed;}
 
-/* qty pad */
-.qty-pad{margin-bottom:1rem;}
-.qty-display{font:700 2.5rem var(--mono);text-align:center;padding:.5rem;background:var(--bg);border-radius:8px;margin-bottom:.6rem;letter-spacing:-.02em;}
-.qty-display .qty-unit-label{font-size:.95rem;font-weight:400;color:var(--muted);margin-left:.35rem;}
-.numpad{display:grid;grid-template-columns:repeat(3,1fr);gap:.4rem;}
-.np-btn{background:var(--surface);border:1.5px solid var(--border);border-radius:8px;padding:.75rem;font:600 1.1rem var(--sans);cursor:pointer;transition:all .12s;text-align:center;}
-.np-btn:hover{background:var(--bg);}
-.np-btn.np-zero{grid-column:span 2;}
-.np-btn.np-del{background:var(--bg);}
-.np-btn.np-clear{background:var(--red-lt);color:var(--red);border-color:#FECACA;}
-
-/* cart */
-.pos-cart{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);display:flex;flex-direction:column;height:fit-content;position:sticky;top:64px;}
-.cart-header{padding:.85rem 1.1rem;border-bottom:1px solid var(--border);font-weight:700;font-size:.9rem;display:flex;justify-content:space-between;align-items:center;}
-.cart-items{min-height:120px;max-height:320px;overflow-y:auto;}
-.cart-item{display:flex;align-items:center;justify-content:space-between;padding:.65rem 1.1rem;border-bottom:1px solid var(--border);gap:.5rem;}
-.cart-item:last-child{border-bottom:none;}
-.ci-name{font-weight:600;font-size:.85rem;}
-.ci-detail{font-size:.75rem;color:var(--muted);}
-.ci-price{font:600 .88rem var(--mono);white-space:nowrap;}
-.cart-empty{text-align:center;color:var(--muted);font-size:.85rem;padding:2rem 1rem;}
-.cart-footer{border-top:1.5px solid var(--border);padding:.85rem 1.1rem;}
-.cart-total{display:flex;justify-content:space-between;align-items:center;margin-bottom:.85rem;}
-.cart-total-label{font-weight:600;font-size:.9rem;}
-.cart-total-val{font:700 1.5rem var(--mono);}
-.cart-farm-row{display:flex;align-items:center;gap:.5rem;margin-bottom:.75rem;}
-.cart-farm-row label{font-size:.78rem;font-weight:500;color:var(--muted);}
-.cart-farm-row select{font:400 .82rem var(--sans);background:var(--bg);border:1.5px solid var(--border);border-radius:7px;padding:.35rem .6rem;color:var(--text);outline:none;flex:1;}
-.cart-farm-row select:focus{border-color:var(--amber-mid);}
-.btn-charge{width:100%;background:var(--header);color:#fff;border:none;font:700 1rem var(--sans);border-radius:8px;padding:.8rem;cursor:pointer;transition:background .12s;}
-.btn-charge:hover{background:#333;}
-.btn-charge:disabled{background:var(--border);cursor:not-allowed;}
-
-/* add to cart btn */
-.add-cart-row{margin-bottom:1rem;}
-.btn-add-cart{width:100%;background:var(--amber-mid);color:#fff;border:none;font:700 .95rem var(--sans);border-radius:9px;padding:.75rem;cursor:pointer;transition:background .12s;}
-.btn-add-cart:hover{background:var(--amber);}
-.btn-add-cart:disabled{background:var(--border);cursor:not-allowed;}
-
-/* toast */
+/* TOAST */
 .toast{position:fixed;bottom:1.5rem;left:50%;transform:translateX(-50%) translateY(80px);background:var(--header);color:#fff;padding:.65rem 1.4rem;border-radius:99px;font:500 .85rem var(--sans);opacity:0;transition:all .3s;pointer-events:none;z-index:9999;white-space:nowrap;}
 .toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+.toast.error{background:var(--red);}
 
-/* ══════════════════════════════════════
-   SETTINGS
-══════════════════════════════════════ */
+/* SETTINGS */
 .settings-section{margin-bottom:2rem;}
 .settings-title{font-weight:700;font-size:1rem;margin-bottom:1rem;}
 .price-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:.65rem;}
@@ -160,17 +125,15 @@ tfoot td:first-child{text-align:left;font-family:var(--sans);font-weight:700;}
 .farm-name-wrap input{font:600 .9rem var(--sans);background:var(--bg);border:1.5px solid var(--border);border-radius:7px;padding:.4rem .65rem;color:var(--text);outline:none;width:100%;}
 .farm-name-wrap input:focus{border-color:var(--amber-mid);}
 
-/* ══════════════════════════════════════
-   HISTORY
-══════════════════════════════════════ */
-.history-filters{display:flex;gap:.6rem;margin-bottom:1rem;flex-wrap:wrap;align-items:center;}
-.history-filters select,.history-filters input[type=date]{font:400 .82rem var(--sans);background:var(--surface);border:1.5px solid var(--border);border-radius:7px;padding:.38rem .7rem;color:var(--text);outline:none;}
-.history-filters select:focus,.history-filters input[type=date]:focus{border-color:var(--amber-mid);}
+/* HISTORY */
+.history-filters{display:flex;gap:.6rem;margin-bottom:.5rem;flex-wrap:wrap;align-items:center;}
+.history-filters select{font:400 .82rem var(--sans);background:var(--surface);border:1.5px solid var(--border);border-radius:7px;padding:.38rem .7rem;color:var(--text);outline:none;}
+.history-filters select:focus{border-color:var(--amber-mid);}
 .badge{display:inline-block;font-size:.7rem;font-weight:700;padding:.18rem .5rem;border-radius:99px;}
 .badge-inv{background:#EDE9FE;color:#5B21B6;}
 .badge-sale{background:var(--amber-lt);color:#92400E;}
 
-/* ── MISC ── */
+/* MISC */
 .empty{text-align:center;padding:2.5rem 1rem;color:var(--muted);font-size:.88rem;}
 .empty-icon{font-size:2rem;margin-bottom:.4rem;}
 .section-label{font-weight:700;font-size:.92rem;margin:1.25rem 0 .65rem;}
@@ -184,6 +147,8 @@ tfoot td:first-child{text-align:left;font-family:var(--sans);font-weight:700;}
 </head>
 <body>
 
+<div class="loading-bar" id="loading-bar"></div>
+
 <header>
   <div class="logo">🥚 <span>Egg Tracker</span></div>
   <nav>
@@ -196,29 +161,23 @@ tfoot td:first-child{text-align:left;font-family:var(--sans);font-weight:700;}
 
 <main>
 
-<!-- ══════════════════════════════════════════════════════
-     INVENTORY PAGE
-══════════════════════════════════════════════════════ -->
+<!-- INVENTORY -->
 <div class="page active" id="page-inventory">
   <div class="farm-tabs" id="inv-farm-tabs"></div>
-
   <div class="date-row">
     <label>Date</label>
     <input type="date" id="inv-date"/>
     <button class="btn-outline" onclick="loadInventoryDay()">Load</button>
   </div>
-
   <div class="egg-grid" id="inv-egg-grid"></div>
-
   <div class="save-row">
     <div class="total-preview"><span>Total eggs today:</span><span id="inv-total-preview">0</span></div>
-    <button class="btn-primary" onclick="saveInventoryDay()">Save Day's Collection</button>
+    <button class="btn-primary" id="btn-save-inv" onclick="saveInventoryDay()">Save Day's Collection</button>
   </div>
-
   <div class="section-label">Recent Collections — <span id="inv-farm-name-label"></span></div>
   <div class="card">
     <div class="table-wrap">
-      <table id="inv-history-table">
+      <table>
         <thead><tr id="inv-history-head"></tr></thead>
         <tbody id="inv-history-body"></tbody>
         <tfoot id="inv-history-foot"></tfoot>
@@ -227,67 +186,42 @@ tfoot td:first-child{text-align:left;font-family:var(--sans);font-weight:700;}
   </div>
 </div>
 
-<!-- ══════════════════════════════════════════════════════
-     POS PAGE
-══════════════════════════════════════════════════════ -->
+<!-- SALES -->
 <div class="page" id="page-pos">
-  <div class="pos-layout">
-    <div>
-      <div class="section-label" style="margin-top:0">1. Select size</div>
-      <div class="pos-sizes" id="pos-sizes"></div>
+  <div class="sales-form">
+    <div class="section-label" style="margin-top:0">Size</div>
+    <div class="size-grid" id="pos-sizes"></div>
 
-      <div class="section-label">2. Pieces or trays?</div>
-      <div class="unit-toggle">
-        <button class="unit-btn selected" id="unit-pcs" onclick="selectUnit('pcs')">Pieces</button>
-        <button class="unit-btn" id="unit-tray" onclick="selectUnit('tray')">Trays (30 pcs)</button>
-      </div>
-
-      <div class="section-label">3. Quantity</div>
-      <div class="qty-pad">
-        <div class="qty-display" id="qty-display">0<span class="qty-unit-label" id="qty-unit-label">pcs</span></div>
-        <div class="numpad">
-          <button class="np-btn" onclick="numpad('7')">7</button>
-          <button class="np-btn" onclick="numpad('8')">8</button>
-          <button class="np-btn" onclick="numpad('9')">9</button>
-          <button class="np-btn" onclick="numpad('4')">4</button>
-          <button class="np-btn" onclick="numpad('5')">5</button>
-          <button class="np-btn" onclick="numpad('6')">6</button>
-          <button class="np-btn" onclick="numpad('1')">1</button>
-          <button class="np-btn" onclick="numpad('2')">2</button>
-          <button class="np-btn" onclick="numpad('3')">3</button>
-          <button class="np-btn np-zero" onclick="numpad('0')">0</button>
-          <button class="np-btn np-del" onclick="numpad('del')">⌫</button>
-        </div>
-      </div>
-
-      <div class="add-cart-row">
-        <button class="btn-add-cart" id="btn-add-cart" onclick="addToCart()" disabled>Add to Order</button>
-      </div>
+    <div class="section-label">Unit</div>
+    <div class="unit-toggle">
+      <button class="unit-btn selected" id="unit-pcs" onclick="selectUnit('pcs')">Pieces</button>
+      <button class="unit-btn" id="unit-tray" onclick="selectUnit('tray')">Trays (30 pcs)</button>
     </div>
 
-    <!-- CART -->
-    <div class="pos-cart">
-      <div class="cart-header">
-        <span>Current Order</span>
-        <button class="btn-sm" onclick="clearCart()">Clear</button>
-      </div>
-      <div class="cart-items" id="cart-items">
-        <div class="cart-empty">No items yet</div>
-      </div>
-      <div class="cart-footer">
-        <div class="cart-total">
-          <span class="cart-total-label">Total</span>
-          <span class="cart-total-val" id="cart-total">₱0.00</span>
-        </div>
-        <button class="btn-charge" id="btn-charge" onclick="chargeOrder()" disabled>Charge</button>
-      </div>
+    <div class="sales-qty-row">
+      <label>Quantity</label>
+      <input type="number" id="sale-qty" min="1" placeholder="0" oninput="updateSalesPreview()"/>
+      <span class="sales-preview" id="sales-preview"></span>
+    </div>
+
+    <button class="btn-record" id="btn-record" onclick="recordSale()" disabled>Record Sale</button>
+  </div>
+
+  <div class="section-label">Today's Sales</div>
+  <div class="card">
+    <div class="table-wrap">
+      <table>
+        <thead><tr>
+          <th>Time</th><th>Size</th><th style="text-align:right">Qty</th><th style="text-align:right">Pieces</th><th style="text-align:right">Total</th>
+        </tr></thead>
+        <tbody id="today-sales-body"></tbody>
+        <tfoot id="today-sales-foot"></tfoot>
+      </table>
     </div>
   </div>
 </div>
 
-<!-- ══════════════════════════════════════════════════════
-     HISTORY PAGE
-══════════════════════════════════════════════════════ -->
+<!-- HISTORY -->
 <div class="page" id="page-history">
   <div class="history-filters">
     <select id="hist-farm-filter" onchange="renderHistory()">
@@ -295,20 +229,19 @@ tfoot td:first-child{text-align:left;font-family:var(--sans);font-weight:700;}
     </select>
     <select id="hist-type-filter" onchange="renderHistory()">
       <option value="all">All Types</option>
-      <option value="inventory">Inventory</option>
+      <option value="inventory">Collections</option>
       <option value="sale">Sales</option>
     </select>
     <select id="hist-month-filter" onchange="renderHistory()"></select>
   </div>
   <p style="font-size:.8rem;color:var(--muted);margin-bottom:1rem;">Farm filter applies to collections only. Sales come from the combined pool.</p>
-
   <div class="stat-row" id="hist-stats"></div>
-
   <div class="card">
     <div class="table-wrap">
       <table>
         <thead><tr>
-          <th>Date</th><th>Type</th><th>Farm / Source</th><th>Size</th><th style="text-align:right">Qty (pcs)</th><th style="text-align:right">Amount</th>
+          <th>Date</th><th>Type</th><th>Farm / Source</th><th>Size</th>
+          <th style="text-align:right">Qty (pcs)</th><th style="text-align:right">Amount</th>
         </tr></thead>
         <tbody id="hist-body"></tbody>
       </table>
@@ -316,54 +249,108 @@ tfoot td:first-child{text-align:left;font-family:var(--sans);font-weight:700;}
   </div>
 </div>
 
-<!-- ══════════════════════════════════════════════════════
-     SETTINGS PAGE
-══════════════════════════════════════════════════════ -->
+<!-- SETTINGS -->
 <div class="page" id="page-settings">
   <div class="settings-section">
     <div class="settings-title">Farm Names</div>
     <div class="farm-name-grid" id="farm-name-grid"></div>
   </div>
-
   <div class="settings-section">
     <div class="settings-title">Prices per Size</div>
     <p style="font-size:.82rem;color:var(--muted);margin-bottom:.85rem;">Set the price per piece and per tray (30 pcs) for each egg size.</p>
     <div class="price-grid" id="price-grid"></div>
   </div>
-
   <button class="btn-primary" onclick="saveSettings()">Save Settings</button>
 </div>
 
 </main>
-
 <div class="toast" id="toast"></div>
 
 <script>
-// ─── CONSTANTS ──────────────────────────────────────────────────────────────
+// ─── SUPABASE ────────────────────────────────────────────────────────────────
+const SUPABASE_URL = 'https://gxdwscnoldiytprwtwsb.supabase.co';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imd4ZHdzY25vbGRpeXRwcnd0d3NiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODIzNDI2MzYsImV4cCI6MjA5NzkxODYzNn0.mrczHl8PGZEzVOoYnk1nzkMa80HWNnq4qCOjmVU5FzE';
+
+const headers = {
+  'Content-Type': 'application/json',
+  'apikey': SUPABASE_KEY,
+  'Authorization': 'Bearer ' + SUPABASE_KEY,
+  'Prefer': 'return=representation'
+};
+
+async function sbGet(table, params=''){
+  const r = await fetch(`${SUPABASE_URL}/rest/v1/${table}?${params}`, {headers});
+  if(!r.ok) throw new Error(await r.text());
+  return r.json();
+}
+async function sbUpsert(table, body){
+  const h = {...headers, 'Prefer':'resolution=merge-duplicates,return=representation'};
+  const r = await fetch(`${SUPABASE_URL}/rest/v1/${table}`, {method:'POST', headers:h, body:JSON.stringify(body)});
+  if(!r.ok) throw new Error(await r.text());
+  return r.json();
+}
+async function sbInsert(table, body){
+  const r = await fetch(`${SUPABASE_URL}/rest/v1/${table}`, {method:'POST', headers, body:JSON.stringify(body)});
+  if(!r.ok) throw new Error(await r.text());
+  return r.json();
+}
+async function sbDelete(table, params){
+  const r = await fetch(`${SUPABASE_URL}/rest/v1/${table}?${params}`, {method:'DELETE', headers});
+  if(!r.ok) throw new Error(await r.text());
+}
+
+// ─── CONSTANTS ───────────────────────────────────────────────────────────────
 const SIZES = ['Reject','Pullets','Small','Medium','Large','XL','Jumbo'];
 const FARMS = [0,1,2];
 const TRAY  = 30;
 
-// ─── STATE ──────────────────────────────────────────────────────────────────
-function def(key, val){ const s = localStorage.getItem(key); return s !== null ? JSON.parse(s) : val; }
-function save(key, val){ localStorage.setItem(key, JSON.stringify(val)); }
+// ─── STATE ───────────────────────────────────────────────────────────────────
+let farmNames = ['Farm 1','Farm 2','Farm 3'];
+let prices    = Object.fromEntries(SIZES.map(s=>[s,{pcs:0,tray:0}]));
+let invFarm   = 0;
+let invDate   = today();
 
-let farmNames = def('farmNames', ['Farm 1','Farm 2','Farm 3']);
-
-// prices[size] = { pcs: number, tray: number }
-let prices = def('prices', Object.fromEntries(SIZES.map(s => [s, {pcs:0, tray:0}])));
-
-// inventory[farmIdx][dateStr][size] = { trays, pcs }
-let inventory = def('inventory', [{},{},{}]);
-
-// sales = [{ id, date, farmIdx, size, unit, qty, pcsTotal, price, total }]
-let sales = def('sales', []);
-
-// ─── POS STATE ───────────────────────────────────────────────────────────────
-let posSelected = null; // size name
+// POS
+let posSelected = null;
 let posUnit     = 'pcs';
-let posQtyStr   = '';
-let cart        = [];
+
+// ─── HELPERS ─────────────────────────────────────────────────────────────────
+function today(){ return new Date().toISOString().split('T')[0]; }
+function fmtDate(d){ if(!d)return''; const[y,m,dd]=d.split('-'); return`${dd}/${m}/${y}`; }
+function fmtP(n){ return '₱'+Number(n).toFixed(2); }
+function monthKey(d){ return d?d.slice(0,7):''; }
+function fmtMonth(mk){ const[y,m]=mk.split('-'); return new Date(y,m-1).toLocaleDateString('en-PH',{month:'long',year:'numeric'}); }
+
+// Loading bar
+function setLoading(on){
+  const b = document.getElementById('loading-bar');
+  if(on){ b.classList.remove('done'); b.classList.add('active'); }
+  else  { b.classList.remove('active'); b.classList.add('done'); setTimeout(()=>b.classList.remove('done'),300); }
+}
+
+// Toast
+function toast(msg, isError=false){
+  const t = document.getElementById('toast');
+  t.textContent=msg; t.className='toast'+(isError?' error':'');
+  void t.offsetWidth;
+  t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),2400);
+}
+
+// ─── INIT ─────────────────────────────────────────────────────────────────────
+async function init(){
+  setLoading(true);
+  try {
+    const rows = await sbGet('settings','select=key,value');
+    rows.forEach(r=>{
+      if(r.key==='farmNames') farmNames = r.value;
+      if(r.key==='prices')    prices    = r.value;
+    });
+  } catch(e){ toast('Could not connect to database. Check your internet connection.', true); }
+  setLoading(false);
+  document.getElementById('inv-date').value = invDate;
+  renderInventoryPage();
+}
 
 // ─── NAV ─────────────────────────────────────────────────────────────────────
 function showPage(name, btn){
@@ -372,52 +359,26 @@ function showPage(name, btn){
   document.getElementById('page-'+name).classList.add('active');
   if(btn) btn.classList.add('active');
   if(name==='inventory') renderInventoryPage();
-  if(name==='pos') renderPOS();
-  if(name==='history') { renderHistoryFilters(); renderHistory(); }
-  if(name==='settings') renderSettings();
+  if(name==='pos')       renderPOS();
+  if(name==='history')   { renderHistoryFilters(); renderHistory(); }
+  if(name==='settings')  renderSettings();
 }
 
-// ─── TOAST ───────────────────────────────────────────────────────────────────
-function toast(msg){
-  const t = document.getElementById('toast');
-  t.textContent = msg; t.classList.add('show');
-  setTimeout(()=>t.classList.remove('show'), 2200);
-}
-
-// ─── HELPERS ─────────────────────────────────────────────────────────────────
-const today = () => new Date().toISOString().split('T')[0];
-const fmtDate = d => { if(!d) return ''; const [y,m,dd]=d.split('-'); return `${dd}/${m}/${y}`; };
-const fmtP = n => '₱'+Number(n).toFixed(2);
-const monthKey = d => d ? d.slice(0,7) : '';
-const fmtMonth = mk => { const [y,m]=mk.split('-'); return new Date(y,m-1).toLocaleDateString('en-PH',{month:'long',year:'numeric'}); };
-
-// ─── INVENTORY PAGE ──────────────────────────────────────────────────────────
-let invFarm = 0;
-let invDate = today();
-
+// ─── INVENTORY ───────────────────────────────────────────────────────────────
 function renderInventoryPage(){
-  // farm tabs
-  const tabs = document.getElementById('inv-farm-tabs');
-  tabs.innerHTML = FARMS.map(i=>`
-    <button class="farm-tab ${i===invFarm?'active':''}" onclick="switchInvFarm(${i})">${farmNames[i]}</button>
-  `).join('');
-  document.getElementById('inv-date').value = invDate;
+  document.getElementById('inv-farm-tabs').innerHTML = FARMS.map(i=>
+    `<button class="farm-tab ${i===invFarm?'active':''}" onclick="switchInvFarm(${i})">${farmNames[i]}</button>`
+  ).join('');
   document.getElementById('inv-farm-name-label').textContent = farmNames[invFarm];
-  renderEggGrid();
-  renderInvHistory();
+  renderEggGrid({});
+  loadInventoryDay();
 }
 
-function switchInvFarm(i){
-  invFarm = i;
-  renderInventoryPage();
-}
+function switchInvFarm(i){ invFarm=i; renderInventoryPage(); }
 
-function renderEggGrid(){
-  const farmData = inventory[invFarm] || {};
-  const dayData  = farmData[invDate] || {};
-  const grid = document.getElementById('inv-egg-grid');
-  grid.innerHTML = SIZES.map(size => {
-    const d = dayData[size] || {trays:0, pcs:0};
+function renderEggGrid(dayData){
+  document.getElementById('inv-egg-grid').innerHTML = SIZES.map(size=>{
+    const d = dayData[size]||{trays:0,pcs:0};
     return `<div class="egg-card">
       <div class="egg-card-top">
         <span class="egg-size-label">${size}</span>
@@ -439,251 +400,245 @@ function renderEggGrid(){
 }
 
 function updateTotal(){
-  let t = 0;
+  let t=0;
   SIZES.forEach(size=>{
-    const tr = parseInt(document.getElementById(`inp-${size}-trays`)?.value||0)||0;
-    const pc = parseInt(document.getElementById(`inp-${size}-pcs`)?.value||0)||0;
-    t += tr*TRAY + pc;
+    const tr=parseInt(document.getElementById(`inp-${size}-trays`)?.value||0)||0;
+    const pc=parseInt(document.getElementById(`inp-${size}-pcs`)?.value||0)||0;
+    t+=tr*TRAY+pc;
   });
-  document.getElementById('inv-total-preview').textContent = t.toLocaleString();
+  document.getElementById('inv-total-preview').textContent=t.toLocaleString();
 }
 
-function loadInventoryDay(){
+async function loadInventoryDay(){
   invDate = document.getElementById('inv-date').value;
-  renderEggGrid();
+  setLoading(true);
+  try {
+    const rows = await sbGet('inventory',
+      `farm_index=eq.${invFarm}&date=eq.${invDate}&select=size,trays,pcs`);
+    const dayData = Object.fromEntries(rows.map(r=>[r.size,{trays:r.trays,pcs:r.pcs}]));
+    renderEggGrid(dayData);
+    await renderInvHistory();
+  } catch(e){ toast('Failed to load data.',true); }
+  setLoading(false);
 }
 
-function saveInventoryDay(){
-  if(!inventory[invFarm]) inventory[invFarm]={};
-  const dayData = {};
-  SIZES.forEach(size=>{
-    const tr = parseInt(document.getElementById(`inp-${size}-trays`)?.value||0)||0;
-    const pc = parseInt(document.getElementById(`inp-${size}-pcs`)?.value||0)||0;
-    dayData[size] = {trays:tr, pcs:pc};
+async function saveInventoryDay(){
+  const btn = document.getElementById('btn-save-inv');
+  btn.disabled=true; btn.textContent='Saving…';
+  setLoading(true);
+  try {
+    const rows = SIZES.map(size=>({
+      farm_index: invFarm,
+      date: invDate,
+      size,
+      trays: parseInt(document.getElementById(`inp-${size}-trays`)?.value||0)||0,
+      pcs:   parseInt(document.getElementById(`inp-${size}-pcs`)?.value||0)||0,
+    }));
+    await sbUpsert('inventory', rows);
+    toast('Saved for '+farmNames[invFarm]+' on '+fmtDate(invDate));
+    await renderInvHistory();
+  } catch(e){ toast('Save failed: '+e.message, true); }
+  btn.disabled=false; btn.textContent='Save Day\'s Collection';
+  setLoading(false);
+}
+
+async function renderInvHistory(){
+  const rows = await sbGet('inventory',
+    `farm_index=eq.${invFarm}&select=date,size,trays,pcs&order=date.desc&limit=210`);
+
+  // group by date
+  const byDate={};
+  rows.forEach(r=>{
+    if(!byDate[r.date]) byDate[r.date]={};
+    byDate[r.date][r.size]={trays:r.trays,pcs:r.pcs};
   });
-  inventory[invFarm][invDate] = dayData;
-  save('inventory', inventory);
-  toast('Collection saved for '+farmNames[invFarm]+' on '+fmtDate(invDate));
-  renderInvHistory();
-}
+  const dates = Object.keys(byDate).sort().reverse().slice(0,14);
 
-function renderInvHistory(){
-  const farmData = inventory[invFarm] || {};
-  const dates = Object.keys(farmData).sort().reverse().slice(0,14);
-  const head = document.getElementById('inv-history-head');
-  const body = document.getElementById('inv-history-body');
-  const foot = document.getElementById('inv-history-foot');
-
-  head.innerHTML = `<th>Date</th>${SIZES.map(s=>`<th>${s}</th>`).join('')}<th>Total</th>`;
+  document.getElementById('inv-history-head').innerHTML =
+    `<th>Date</th>${SIZES.map(s=>`<th>${s}</th>`).join('')}<th>Total</th>`;
 
   if(dates.length===0){
-    body.innerHTML = `<tr><td colspan="${SIZES.length+2}"><div class="empty"><div class="empty-icon">🥚</div>No records yet</div></td></tr>`;
-    foot.innerHTML=''; return;
+    document.getElementById('inv-history-body').innerHTML =
+      `<tr><td colspan="${SIZES.length+2}"><div class="empty"><div class="empty-icon">🥚</div>No records yet</div></td></tr>`;
+    document.getElementById('inv-history-foot').innerHTML='';
+    return;
   }
 
-  // totals
-  const totals = Object.fromEntries(SIZES.map(s=>[s,0]));
-  let grandTotal = 0;
-
-  body.innerHTML = dates.map(d=>{
-    const day = farmData[d]||{};
-    let rowTotal = 0;
-    const cells = SIZES.map(size=>{
-      const v = day[size]||{trays:0,pcs:0};
-      const n = v.trays*TRAY + v.pcs;
-      totals[size]+=n; rowTotal+=n; grandTotal+=n;
-      const label = [];
+  const totals=Object.fromEntries(SIZES.map(s=>[s,0]));
+  let grand=0;
+  document.getElementById('inv-history-body').innerHTML = dates.map(d=>{
+    const day=byDate[d]||{};
+    let rowTotal=0;
+    const cells=SIZES.map(size=>{
+      const v=day[size]||{trays:0,pcs:0};
+      const n=v.trays*TRAY+v.pcs;
+      totals[size]+=n; rowTotal+=n; grand+=n;
+      const label=[];
       if(v.trays) label.push(`${v.trays}T`);
       if(v.pcs)   label.push(`${v.pcs}pc`);
-      return `<td class="${n===0?'zero':''}">${label.join('+') || '—'}</td>`;
+      return `<td class="${n===0?'zero':''}">${label.join('+')||'—'}</td>`;
     }).join('');
     return `<tr><td>${fmtDate(d)}</td>${cells}<td><strong>${rowTotal||'—'}</strong></td></tr>`;
   }).join('');
-
-  foot.innerHTML = `<tr><td>Total</td>${SIZES.map(s=>`<td>${totals[s]||'—'}</td>`).join('')}<td>${grandTotal}</td></tr>`;
+  document.getElementById('inv-history-foot').innerHTML =
+    `<tr><td>Total</td>${SIZES.map(s=>`<td>${totals[s]||'—'}</td>`).join('')}<td>${grand}</td></tr>`;
 }
 
-// ─── POS ─────────────────────────────────────────────────────────────────────
+// ─── SALES ───────────────────────────────────────────────────────────────────
+let posSelected = null;
+let posUnit     = 'pcs';
+
 function renderPOS(){
-  // size buttons
-  const grid = document.getElementById('pos-sizes');
-  grid.innerHTML = SIZES.map(s=>`
-    <button class="size-btn ${posSelected===s?'selected':''}" onclick="selectSize('${s}')">
-      <span class="sname">${s}</span>
-      <span class="sprice">${fmtP(prices[s]?.pcs||0)}/pc · ${fmtP(prices[s]?.tray||0)}/tray</span>
-    </button>
-  `).join('');
-  updatePOSDisplay();
+  document.getElementById('pos-sizes').innerHTML = SIZES.map(s=>
+    `<button class="size-btn ${posSelected===s?'selected':''}" onclick="selectSize('${s}')">${s}</button>`
+  ).join('');
+  updateSalesPreview();
+  loadTodaySales();
 }
 
 function selectSize(s){
   posSelected = s;
-  renderPOS();
+  document.querySelectorAll('.size-btn').forEach(b=>b.classList.toggle('selected', b.textContent===s));
+  updateSalesPreview();
 }
 
 function selectUnit(u){
   posUnit = u;
   document.getElementById('unit-pcs').classList.toggle('selected', u==='pcs');
   document.getElementById('unit-tray').classList.toggle('selected', u==='tray');
-  document.getElementById('qty-unit-label').textContent = u==='pcs' ? 'pcs' : 'tray(s)';
-  updatePOSDisplay();
+  updateSalesPreview();
 }
 
-function numpad(v){
-  if(v==='del')        posQtyStr = posQtyStr.slice(0,-1);
-  else if(v==='clear') posQtyStr = '';
-  else                 posQtyStr = (posQtyStr+v).replace(/^0+/,'').slice(0,4);
-  updatePOSDisplay();
-}
-
-function updatePOSDisplay(){
-  const qty = parseInt(posQtyStr)||0;
-  document.getElementById('qty-display').innerHTML =
-    `${qty||0}<span class="qty-unit-label">${posUnit==='pcs'?'pcs':'tray(s)'}</span>`;
+function updateSalesPreview(){
+  const qty = parseInt(document.getElementById('sale-qty')?.value)||0;
+  const preview = document.getElementById('sales-preview');
+  const btn = document.getElementById('btn-record');
   const ok = posSelected && qty > 0;
-  document.getElementById('btn-add-cart').disabled = !ok;
-}
-
-function addToCart(){
-  const qty  = parseInt(posQtyStr)||0;
-  if(!posSelected || qty===0) return;
+  btn.disabled = !ok;
+  if(!ok){ preview.innerHTML=''; return; }
   const pcsTotal = posUnit==='pcs' ? qty : qty*TRAY;
   const unitPrice = posUnit==='pcs' ? (prices[posSelected]?.pcs||0) : (prices[posSelected]?.tray||0);
   const total = qty * unitPrice;
-  cart.push({ size:posSelected, unit:posUnit, qty, pcsTotal, unitPrice, total, id:Date.now() });
-  posQtyStr = '';
-  updatePOSDisplay();
-  renderCart();
-  toast(`Added ${qty} ${posUnit==='tray'?'tray(s)':'pcs'} of ${posSelected}`);
+  preview.innerHTML = `<strong>${pcsTotal} pcs</strong> · ${fmtP(total)}`;
 }
 
-function renderCart(){
-  const container = document.getElementById('cart-items');
-  if(cart.length===0){
-    container.innerHTML='<div class="cart-empty">No items yet</div>';
-    document.getElementById('cart-total').textContent='₱0.00';
-    document.getElementById('btn-charge').disabled=true;
-    return;
-  }
-  container.innerHTML = cart.map(item=>`
-    <div class="cart-item">
-      <div>
-        <div class="ci-name">${item.size}</div>
-        <div class="ci-detail">${item.qty} ${item.unit==='tray'?'tray(s) ('+item.pcsTotal+' pcs)':'pcs'} × ${fmtP(item.unitPrice)}</div>
-      </div>
-      <div style="display:flex;align-items:center;gap:.5rem">
-        <span class="ci-price">${fmtP(item.total)}</span>
-        <button class="btn-sm" onclick="removeCartItem(${item.id})">✕</button>
-      </div>
-    </div>
-  `).join('');
-  const total = cart.reduce((s,c)=>s+c.total,0);
-  document.getElementById('cart-total').textContent = fmtP(total);
-  document.getElementById('btn-charge').disabled = false;
+async function recordSale(){
+  const qty = parseInt(document.getElementById('sale-qty').value)||0;
+  if(!posSelected || qty===0) return;
+  const btn = document.getElementById('btn-record');
+  btn.disabled=true; btn.textContent='Saving…';
+  const pcsTotal  = posUnit==='pcs' ? qty : qty*TRAY;
+  const unitPrice = posUnit==='pcs' ? (prices[posSelected]?.pcs||0) : (prices[posSelected]?.tray||0);
+  const total     = qty * unitPrice;
+  setLoading(true);
+  try {
+    await sbInsert('sales',[{ date:today(), size:posSelected, unit:posUnit, qty, pcs_total:pcsTotal, unit_price:unitPrice, total }]);
+    toast(`Recorded: ${qty} ${posUnit==='tray'?'tray(s)':'pcs'} of ${posSelected} · ${fmtP(total)}`);
+    document.getElementById('sale-qty').value='';
+    updateSalesPreview();
+    loadTodaySales();
+  } catch(e){ toast('Save failed: '+e.message, true); }
+  btn.disabled=false; btn.textContent='Record Sale';
+  setLoading(false);
 }
 
-function removeCartItem(id){
-  cart = cart.filter(c=>c.id!==id);
-  renderCart();
-}
-
-function clearCart(){
-  cart = [];
-  renderCart();
-}
-
-function chargeOrder(){
-  if(cart.length===0) return;
-  const dateStr = today();
-  cart.forEach(item=>{
-    sales.push({
-      id: Date.now()+Math.random(),
-      date: dateStr,
-      size: item.size,
-      unit: item.unit,
-      qty: item.qty,
-      pcsTotal: item.pcsTotal,
-      unitPrice: item.unitPrice,
-      total: item.total,
-    });
-  });
-  save('sales', sales);
-  const grandTotal = cart.reduce((s,c)=>s+c.total,0);
-  toast(`Charged ${fmtP(grandTotal)}`);
-  cart = [];
-  renderCart();
+async function loadTodaySales(){
+  try {
+    const rows = await sbGet('sales', `date=eq.${today()}&select=created_at,size,unit,qty,pcs_total,total&order=created_at.desc`);
+    const body = document.getElementById('today-sales-body');
+    const foot = document.getElementById('today-sales-foot');
+    if(rows.length===0){
+      body.innerHTML=`<tr><td colspan="5"><div class="empty"><div class="empty-icon">📋</div>No sales recorded today</div></td></tr>`;
+      foot.innerHTML=''; return;
+    }
+    body.innerHTML = rows.map(r=>{
+      const time = new Date(r.created_at).toLocaleTimeString('en-PH',{hour:'2-digit',minute:'2-digit'});
+      const qtyLabel = r.unit==='tray' ? `${r.qty} tray(s)` : `${r.qty} pcs`;
+      return `<tr>
+        <td style="text-align:left;font-family:var(--sans)">${time}</td>
+        <td style="text-align:left;font-family:var(--sans)">${r.size}</td>
+        <td>${qtyLabel}</td>
+        <td>${r.pcs_total}</td>
+        <td>${fmtP(r.total)}</td>
+      </tr>`;
+    }).join('');
+    const totalPcs = rows.reduce((s,r)=>s+r.pcs_total,0);
+    const totalRev = rows.reduce((s,r)=>s+parseFloat(r.total),0);
+    foot.innerHTML=`<tr><td>Total</td><td></td><td></td><td>${totalPcs}</td><td>${fmtP(totalRev)}</td></tr>`;
+  } catch(e){}
 }
 
 // ─── HISTORY ─────────────────────────────────────────────────────────────────
-function renderHistoryFilters(){
-  // farm filter
-  const fs = document.getElementById('hist-farm-filter');
-  const curFarm = fs.value;
-  fs.innerHTML = `<option value="all">All Farms</option>${FARMS.map(i=>`<option value="${i}">${farmNames[i]}</option>`).join('')}`;
-  fs.value = curFarm;
-
-  // month filter — gather all months
-  const months = new Set();
-  sales.forEach(s=>months.add(monthKey(s.date)));
-  FARMS.forEach(fi=>{
-    Object.keys(inventory[fi]||{}).forEach(d=>months.add(monthKey(d)));
-  });
-  const sorted = [...months].sort().reverse();
-  const ms = document.getElementById('hist-month-filter');
-  const cur = ms.value || (sorted[0]||monthKey(today()));
-  ms.innerHTML = sorted.map(m=>`<option value="${m}" ${m===cur?'selected':''}>${fmtMonth(m)}</option>`).join('');
-  if(!ms.value && sorted.length) ms.value = sorted[0];
+async function renderHistoryFilters(){
+  const fs=document.getElementById('hist-farm-filter');
+  fs.innerHTML=`<option value="all">All Farms</option>${FARMS.map(i=>`<option value="${i}">${farmNames[i]}</option>`).join('')}`;
+  // gather months from both tables
+  setLoading(true);
+  try {
+    const [invRows, saleRows] = await Promise.all([
+      sbGet('inventory','select=date&order=date.desc'),
+      sbGet('sales','select=date&order=date.desc')
+    ]);
+    const months=new Set([
+      ...invRows.map(r=>monthKey(r.date)),
+      ...saleRows.map(r=>monthKey(r.date))
+    ]);
+    const sorted=[...months].filter(Boolean).sort().reverse();
+    const ms=document.getElementById('hist-month-filter');
+    const cur=ms.value||(sorted[0]||monthKey(today()));
+    ms.innerHTML=sorted.length
+      ? sorted.map(m=>`<option value="${m}" ${m===cur?'selected':''}>${fmtMonth(m)}</option>`).join('')
+      : `<option value="${monthKey(today())}">${fmtMonth(monthKey(today()))}</option>`;
+  } catch(e){}
+  setLoading(false);
 }
 
-function renderHistory(){
+async function renderHistory(){
   const farmF  = document.getElementById('hist-farm-filter').value;
   const typeF  = document.getElementById('hist-type-filter').value;
   const monthF = document.getElementById('hist-month-filter').value || monthKey(today());
+  const [y,m]  = monthF.split('-');
+  const dateGte= `${monthF}-01`;
+  const dateLt = `${y}-${String(parseInt(m)+1).padStart(2,'0')}-01`;
 
-  // build rows
-  const rows = [];
-
-  // inventory rows
-  if(typeF==='all'||typeF==='inventory'){
-    FARMS.forEach(fi=>{
-      if(farmF!=='all' && farmF!=String(fi)) return;
-      const farmData = inventory[fi]||{};
-      Object.keys(farmData).filter(d=>monthKey(d)===monthF).forEach(d=>{
-        const day = farmData[d];
-        SIZES.forEach(size=>{
-          const v = day[size]||{trays:0,pcs:0};
-          const n = v.trays*TRAY+v.pcs;
-          if(n>0) rows.push({ date:d, type:'inventory', farmLabel:farmNames[fi], size, qty:n, total:null });
-        });
+  setLoading(true);
+  const rows=[];
+  try {
+    if(typeF==='all'||typeF==='inventory'){
+      let q=`farm_index=${farmF==='all'?'gte.0':'eq.'+farmF}&date=gte.${dateGte}&date=lt.${dateLt}&trays=gt.0,pcs=gt.0&select=date,farm_index,size,trays,pcs&order=date.desc`;
+      // simpler: get all for month, filter client-side for nonzero
+      const r=await sbGet('inventory',
+        `${farmF==='all'?'':'farm_index=eq.'+farmF+'&'}date=gte.${dateGte}&date=lt.${dateLt}&select=date,farm_index,size,trays,pcs&order=date.desc`);
+      r.filter(r=>r.trays>0||r.pcs>0).forEach(r=>{
+        rows.push({date:r.date,type:'inventory',farmLabel:farmNames[r.farm_index],size:r.size,qty:r.trays*TRAY+r.pcs,total:null});
       });
-    });
-  }
-
-  // sales rows — no farm filter, always from combined pool
-  if(typeF==='all'||typeF==='sale'){
-    sales.filter(s=> monthKey(s.date)===monthF).forEach(s=>{
-      rows.push({ date:s.date, type:'sale', farmLabel:'Combined', size:s.size, qty:s.pcsTotal, total:s.total });
-    });
-  }
+    }
+    if(typeF==='all'||typeF==='sale'){
+      const r=await sbGet('sales',
+        `date=gte.${dateGte}&date=lt.${dateLt}&select=date,size,pcs_total,total&order=date.desc`);
+      r.forEach(r=>{
+        rows.push({date:r.date,type:'sale',farmLabel:'Combined',size:r.size,qty:r.pcs_total,total:parseFloat(r.total)});
+      });
+    }
+  } catch(e){ toast('Failed to load history.',true); setLoading(false); return; }
+  setLoading(false);
 
   rows.sort((a,b)=>b.date.localeCompare(a.date));
 
-  // stats
-  const totalInv  = rows.filter(r=>r.type==='inventory').reduce((s,r)=>s+r.qty,0);
-  const totalSold = rows.filter(r=>r.type==='sale').reduce((s,r)=>s+r.qty,0);
-  const totalRev  = rows.filter(r=>r.type==='sale').reduce((s,r)=>s+r.total,0);
-  document.getElementById('hist-stats').innerHTML = `
+  const totalInv =rows.filter(r=>r.type==='inventory').reduce((s,r)=>s+r.qty,0);
+  const totalSold=rows.filter(r=>r.type==='sale').reduce((s,r)=>s+r.qty,0);
+  const totalRev =rows.filter(r=>r.type==='sale').reduce((s,r)=>s+(r.total||0),0);
+  document.getElementById('hist-stats').innerHTML=`
     <div class="stat-card"><div class="sc-label">Eggs Collected</div><div class="sc-val">${totalInv.toLocaleString()}</div><div class="sc-sub">pieces</div></div>
     <div class="stat-card"><div class="sc-label">Eggs Sold</div><div class="sc-val">${totalSold.toLocaleString()}</div><div class="sc-sub">pieces</div></div>
-    <div class="stat-card"><div class="sc-label">Revenue</div><div class="sc-val" style="font-size:1.2rem">${fmtP(totalRev)}</div><div class="sc-sub">this period</div></div>
-  `;
+    <div class="stat-card"><div class="sc-label">Revenue</div><div class="sc-val" style="font-size:1.2rem">${fmtP(totalRev)}</div><div class="sc-sub">this period</div></div>`;
 
-  const body = document.getElementById('hist-body');
+  const body=document.getElementById('hist-body');
   if(rows.length===0){
     body.innerHTML=`<tr><td colspan="6"><div class="empty"><div class="empty-icon">📅</div>No records for this period</div></td></tr>`;
     return;
   }
-  body.innerHTML = rows.map(r=>`<tr>
+  body.innerHTML=rows.map(r=>`<tr>
     <td>${fmtDate(r.date)}</td>
     <td><span class="badge ${r.type==='sale'?'badge-sale':'badge-inv'}">${r.type==='sale'?'Sale':'Collection'}</span></td>
     <td>${r.farmLabel}</td>
@@ -695,51 +650,47 @@ function renderHistory(){
 
 // ─── SETTINGS ────────────────────────────────────────────────────────────────
 function renderSettings(){
-  // farm names
-  document.getElementById('farm-name-grid').innerHTML = FARMS.map(i=>`
+  document.getElementById('farm-name-grid').innerHTML=FARMS.map(i=>`
     <div class="farm-name-wrap">
       <label>Farm ${i+1}</label>
       <input type="text" id="fname-${i}" value="${farmNames[i]}" placeholder="Farm ${i+1}"/>
-    </div>
-  `).join('');
-
-  // prices
-  document.getElementById('price-grid').innerHTML = SIZES.map(s=>`
+    </div>`).join('');
+  document.getElementById('price-grid').innerHTML=SIZES.map(s=>`
     <div class="price-card">
       <label>${s}</label>
       <div class="price-inputs">
-        <div class="price-input-wrap">
-          <div class="price-sub">Per Piece</div>
-          <input type="number" min="0" step="0.01" id="price-${s}-pcs" value="${prices[s]?.pcs||0}" placeholder="0.00"/>
+        <div class="price-input-wrap"><div class="price-sub">Per Piece</div>
+          <input type="number" min="0" step="0.01" id="price-${s}-pcs" value="${prices[s]?.pcs||0}"/>
         </div>
-        <div class="price-input-wrap">
-          <div class="price-sub">Per Tray</div>
-          <input type="number" min="0" step="0.01" id="price-${s}-tray" value="${prices[s]?.tray||0}" placeholder="0.00"/>
+        <div class="price-input-wrap"><div class="price-sub">Per Tray</div>
+          <input type="number" min="0" step="0.01" id="price-${s}-tray" value="${prices[s]?.tray||0}"/>
         </div>
       </div>
-    </div>
-  `).join('');
+    </div>`).join('');
 }
 
-function saveSettings(){
-  FARMS.forEach(i=>{
-    const v = document.getElementById(`fname-${i}`)?.value.trim();
-    if(v) farmNames[i]=v;
-  });
+async function saveSettings(){
+  FARMS.forEach(i=>{ const v=document.getElementById(`fname-${i}`)?.value.trim(); if(v) farmNames[i]=v; });
   SIZES.forEach(s=>{
-    prices[s] = {
+    prices[s]={
       pcs:  parseFloat(document.getElementById(`price-${s}-pcs`)?.value)||0,
       tray: parseFloat(document.getElementById(`price-${s}-tray`)?.value)||0,
     };
   });
-  save('farmNames', farmNames);
-  save('prices', prices);
-  toast('Settings saved!');
+  setLoading(true);
+  try {
+    await sbUpsert('settings',[
+      {key:'farmNames', value:farmNames},
+      {key:'prices',    value:prices},
+    ]);
+    toast('Settings saved!');
+    renderInventoryPage();
+  } catch(e){ toast('Save failed: '+e.message,true); }
+  setLoading(false);
 }
 
-// ─── INIT ─────────────────────────────────────────────────────────────────────
-document.getElementById('inv-date').value = today();
-renderInventoryPage();
+// ─── START ────────────────────────────────────────────────────────────────────
+init();
 </script>
 </body>
 </html>
