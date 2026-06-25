@@ -279,10 +279,6 @@ tfoot td:first-child{text-align:left;font-family:var(--sans);font-weight:700;}
           <span class="cart-total-label">Total</span>
           <span class="cart-total-val" id="cart-total">₱0.00</span>
         </div>
-        <div class="cart-farm-row">
-          <label>Farm</label>
-          <select id="pos-farm-select"></select>
-        </div>
         <button class="btn-charge" id="btn-charge" onclick="chargeOrder()" disabled>Charge</button>
       </div>
     </div>
@@ -304,6 +300,7 @@ tfoot td:first-child{text-align:left;font-family:var(--sans);font-weight:700;}
     </select>
     <select id="hist-month-filter" onchange="renderHistory()"></select>
   </div>
+  <p style="font-size:.8rem;color:var(--muted);margin-bottom:1rem;">Farm filter applies to collections only. Sales come from the combined pool.</p>
 
   <div class="stat-row" id="hist-stats"></div>
 
@@ -311,7 +308,7 @@ tfoot td:first-child{text-align:left;font-family:var(--sans);font-weight:700;}
     <div class="table-wrap">
       <table>
         <thead><tr>
-          <th>Date</th><th>Type</th><th>Farm</th><th>Size</th><th style="text-align:right">Qty</th><th style="text-align:right">Amount</th>
+          <th>Date</th><th>Type</th><th>Farm / Source</th><th>Size</th><th style="text-align:right">Qty (pcs)</th><th style="text-align:right">Amount</th>
         </tr></thead>
         <tbody id="hist-body"></tbody>
       </table>
@@ -508,10 +505,6 @@ function renderInvHistory(){
 
 // ─── POS ─────────────────────────────────────────────────────────────────────
 function renderPOS(){
-  // farm select
-  const sel = document.getElementById('pos-farm-select');
-  sel.innerHTML = FARMS.map(i=>`<option value="${i}">${farmNames[i]}</option>`).join('');
-
   // size buttons
   const grid = document.getElementById('pos-sizes');
   grid.innerHTML = SIZES.map(s=>`
@@ -601,13 +594,11 @@ function clearCart(){
 
 function chargeOrder(){
   if(cart.length===0) return;
-  const farmIdx = parseInt(document.getElementById('pos-farm-select').value);
   const dateStr = today();
   cart.forEach(item=>{
     sales.push({
       id: Date.now()+Math.random(),
       date: dateStr,
-      farmIdx,
       size: item.size,
       unit: item.unit,
       qty: item.qty,
@@ -618,7 +609,7 @@ function chargeOrder(){
   });
   save('sales', sales);
   const grandTotal = cart.reduce((s,c)=>s+c.total,0);
-  toast(`Charged ${fmtP(grandTotal)} from ${farmNames[farmIdx]}`);
+  toast(`Charged ${fmtP(grandTotal)}`);
   cart = [];
   renderCart();
 }
@@ -662,20 +653,16 @@ function renderHistory(){
         SIZES.forEach(size=>{
           const v = day[size]||{trays:0,pcs:0};
           const n = v.trays*TRAY+v.pcs;
-          if(n>0) rows.push({ date:d, type:'inventory', farmIdx:fi, size, qty:n, total:null });
+          if(n>0) rows.push({ date:d, type:'inventory', farmLabel:farmNames[fi], size, qty:n, total:null });
         });
       });
     });
   }
 
-  // sales rows
+  // sales rows — no farm filter, always from combined pool
   if(typeF==='all'||typeF==='sale'){
-    sales.filter(s=>{
-      if(monthKey(s.date)!==monthF) return false;
-      if(farmF!=='all' && farmF!=String(s.farmIdx)) return false;
-      return true;
-    }).forEach(s=>{
-      rows.push({ date:s.date, type:'sale', farmIdx:s.farmIdx, size:s.size, qty:s.pcsTotal, total:s.total });
+    sales.filter(s=> monthKey(s.date)===monthF).forEach(s=>{
+      rows.push({ date:s.date, type:'sale', farmLabel:'Combined', size:s.size, qty:s.pcsTotal, total:s.total });
     });
   }
 
@@ -699,7 +686,7 @@ function renderHistory(){
   body.innerHTML = rows.map(r=>`<tr>
     <td>${fmtDate(r.date)}</td>
     <td><span class="badge ${r.type==='sale'?'badge-sale':'badge-inv'}">${r.type==='sale'?'Sale':'Collection'}</span></td>
-    <td>${farmNames[r.farmIdx]}</td>
+    <td>${r.farmLabel}</td>
     <td>${r.size}</td>
     <td>${r.qty.toLocaleString()}</td>
     <td>${r.total!==null?fmtP(r.total):'—'}</td>
