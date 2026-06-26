@@ -379,10 +379,14 @@ async function sbGet(table, params=''){
   return r.json();
 }
 async function sbUpsert(table, body){
-  const h = {...headers, 'Prefer':'resolution=merge-duplicates,return=representation'};
+  const h = {
+    'Content-Type': 'application/json',
+    'apikey': SUPABASE_KEY,
+    'Authorization': 'Bearer ' + SUPABASE_KEY,
+    'Prefer': 'resolution=merge-duplicates'
+  };
   const r = await fetch(`${SUPABASE_URL}/rest/v1/${table}`, {method:'POST', headers:h, body:JSON.stringify(body)});
   if(!r.ok) throw new Error(await r.text());
-  return r.json();
 }
 async function sbInsert(table, body){
   const r = await fetch(`${SUPABASE_URL}/rest/v1/${table}`, {method:'POST', headers, body:JSON.stringify(body)});
@@ -399,6 +403,13 @@ const SIZES = ['Reject','Pullets','Small','Medium','Large','XL','Jumbo'];
 const FARMS = [0,1,2];
 const TRAY  = 30;
 
+// ─── HELPERS (defined early so state init can use them) ───────────────────────
+function today(){ return new Date().toISOString().split('T')[0]; }
+function fmtDate(d){ if(!d)return''; const[y,m,dd]=d.split('-'); return`${dd}/${m}/${y}`; }
+function fmtP(n){ return '₱'+Number(n).toFixed(2); }
+function monthKey(d){ return d?d.slice(0,7):''; }
+function fmtMonth(mk){ const[y,m]=mk.split('-'); return new Date(y,m-1).toLocaleDateString('en-PH',{month:'long',year:'numeric'}); }
+
 // ─── STATE ───────────────────────────────────────────────────────────────────
 let farmNames = ['Farm 1','Farm 2','Farm 3'];
 let prices    = Object.fromEntries(SIZES.map(s=>[s,{pcs:0,tray:0}]));
@@ -408,13 +419,6 @@ let invDate   = today();
 // POS
 let posSelected = null;
 let posUnit     = 'pcs';
-
-// ─── HELPERS ─────────────────────────────────────────────────────────────────
-function today(){ return new Date().toISOString().split('T')[0]; }
-function fmtDate(d){ if(!d)return''; const[y,m,dd]=d.split('-'); return`${dd}/${m}/${y}`; }
-function fmtP(n){ return '₱'+Number(n).toFixed(2); }
-function monthKey(d){ return d?d.slice(0,7):''; }
-function fmtMonth(mk){ const[y,m]=mk.split('-'); return new Date(y,m-1).toLocaleDateString('en-PH',{month:'long',year:'numeric'}); }
 
 // Loading bar
 function setLoading(on){
@@ -465,7 +469,6 @@ function renderInventoryPage(){
     `<button class="farm-tab ${i===invFarm?'active':''}" onclick="switchInvFarm(${i})">${farmNames[i]}</button>`
   ).join('');
   document.getElementById('inv-farm-name-label').textContent = farmNames[invFarm];
-  renderEggGrid({});
   loadInventoryDay();
 }
 
@@ -576,7 +579,7 @@ async function renderInvHistory(){
       <td>${fmtDate(d)}</td>${cells}
       <td><strong>${rowTotal||'—'}</strong></td>
       <td><div class="row-actions">
-        <button class="btn-edit" onclick="openInvEdit('${d}',${JSON.stringify(JSON.stringify(day))})">Edit</button>
+        <button class="btn-edit" onclick="openInvEdit('${d}')">Edit</button>
         <button class="btn-del" onclick="deleteInvDay('${d}')">Delete</button>
       </div></td>
     </tr>`;
@@ -724,9 +727,14 @@ async function deleteSale(id){
 let invEditDate = null;
 let invEditDay  = null;
 
-function openInvEdit(date, dayJson){
+async function openInvEdit(date){
   invEditDate = date;
-  invEditDay  = JSON.parse(dayJson);
+  setLoading(true);
+  try {
+    const rows = await sbGet('inventory', `farm_index=eq.${invFarm}&date=eq.${date}&select=size,trays,pcs`);
+    invEditDay = Object.fromEntries(rows.map(r=>[r.size,{trays:r.trays,pcs:r.pcs}]));
+  } catch(e){ toast('Failed to load record.',true); setLoading(false); return; }
+  setLoading(false);
   document.getElementById('inv-modal-title').textContent = `Edit — ${fmtDate(date)} · ${farmNames[invFarm]}`;
   document.getElementById('inv-modal-fields').innerHTML = SIZES.map(size=>{
     const v = invEditDay[size]||{trays:0,pcs:0};
