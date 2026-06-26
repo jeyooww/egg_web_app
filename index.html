@@ -144,6 +144,16 @@ tfoot td:first-child{text-align:left;font-family:var(--sans);font-weight:700;}
 .farm-name-wrap input{font:600 .9rem var(--sans);background:var(--bg);border:1.5px solid var(--border);border-radius:7px;padding:.4rem .65rem;color:var(--text);outline:none;width:100%;}
 .farm-name-wrap input:focus{border-color:var(--amber-mid);}
 
+/* HISTORY VIEW TOGGLE */
+.hist-view-toggle{display:flex;gap:4px;background:var(--border);border-radius:9px;padding:3px;width:fit-content;margin-bottom:1rem;}
+.hv-btn{background:none;border:none;font:600 .83rem var(--sans);padding:.38rem 1.1rem;border-radius:7px;cursor:pointer;color:var(--muted);transition:all .15s;}
+.hv-btn.active{background:var(--surface);color:var(--text);box-shadow:0 1px 3px rgba(0,0,0,.1);}
+
+/* HISTORY VIEW TOGGLE */
+.hist-view-toggle{display:flex;gap:.4rem;margin-bottom:1.25rem;}
+.hv-btn{padding:.5rem 1.2rem;border-radius:8px;border:2px solid var(--border);background:var(--surface);font:600 .85rem var(--sans);cursor:pointer;transition:all .15s;color:var(--muted);}
+.hv-btn.active{border-color:var(--amber-mid);background:var(--amber-lt);color:#92400E;}
+
 /* HISTORY */
 .history-filters{display:flex;gap:.6rem;margin-bottom:.5rem;flex-wrap:wrap;align-items:center;}
 .history-filters select{font:400 .82rem var(--sans);background:var(--surface);border:1.5px solid var(--border);border-radius:7px;padding:.38rem .7rem;color:var(--text);outline:none;}
@@ -243,17 +253,39 @@ tfoot td:first-child{text-align:left;font-family:var(--sans);font-weight:700;}
 
 <!-- HISTORY -->
 <div class="page" id="page-history">
-  <div class="history-filters">
-    <select id="hist-farm-filter" onchange="renderHistory()">
-      <option value="all">All Farms</option>
-    </select>
-    <select id="hist-type-filter" onchange="renderHistory()">
-      <option value="all">All Types</option>
-      <option value="inventory">Collections</option>
-      <option value="sale">Sales</option>
-    </select>
-    <select id="hist-month-filter" onchange="renderHistory()"></select>
+  <div class="hist-view-toggle">
+    <button class="hv-btn active" id="hv-month" onclick="switchHistView('month')">Monthly</button>
+    <button class="hv-btn" id="hv-day" onclick="switchHistView('day')">Daily</button>
   </div>
+
+  <div id="hist-month-controls">
+    <div class="history-filters">
+      <select id="hist-farm-filter" onchange="renderHistory()">
+        <option value="all">All Farms</option>
+      </select>
+      <select id="hist-type-filter" onchange="renderHistory()">
+        <option value="all">All Types</option>
+        <option value="inventory">Collections</option>
+        <option value="sale">Sales</option>
+      </select>
+      <select id="hist-month-filter" onchange="renderHistory()"></select>
+    </div>
+  </div>
+
+  <div id="hist-day-controls" style="display:none">
+    <div class="history-filters">
+      <select id="hist-day-farm-filter" onchange="renderDayHistory()">
+        <option value="all">All Farms</option>
+      </select>
+      <select id="hist-day-type-filter" onchange="renderDayHistory()">
+        <option value="all">All Types</option>
+        <option value="inventory">Collections</option>
+        <option value="sale">Sales</option>
+      </select>
+      <input type="date" id="hist-day-date" onchange="renderDayHistory()"/>
+    </div>
+  </div>
+
   <p style="font-size:.8rem;color:var(--muted);margin-bottom:1rem;">Farm filter applies to collections only. Sales come from the combined pool.</p>
   <div class="stat-row" id="hist-stats"></div>
   <div class="card">
@@ -374,8 +406,8 @@ let invFarm   = 0;
 let invDate   = today();
 
 // POS
-// let posSelected = null;
-// let posUnit     = 'pcs';
+let posSelected = null;
+let posUnit     = 'pcs';
 
 // ─── HELPERS ─────────────────────────────────────────────────────────────────
 function today(){ return new Date().toISOString().split('T')[0]; }
@@ -554,8 +586,6 @@ async function renderInvHistory(){
 }
 
 // ─── SALES ───────────────────────────────────────────────────────────────────
-let posSelected = null;
-let posUnit     = 'pcs';
 
 function renderPOS(){
   document.getElementById('pos-sizes').innerHTML = SIZES.map(s=>
@@ -741,76 +771,57 @@ function closeModal(id){ document.getElementById(id).classList.add('hidden'); }
 document.addEventListener('click', e=>{
   if(e.target.classList.contains('modal-overlay')) e.target.classList.add('hidden');
 });
+// ─── HISTORY ─────────────────────────────────────────────────────────────────
+let histView = 'month';
+
+function switchHistView(v){
+  histView = v;
+  document.getElementById('hv-month').classList.toggle('active', v==='month');
+  document.getElementById('hv-day').classList.toggle('active', v==='day');
+  document.getElementById('hist-month-controls').style.display = v==='month' ? '' : 'none';
+  document.getElementById('hist-day-controls').style.display   = v==='day'   ? '' : 'none';
+  if(v==='month') renderHistory();
+  else            renderDayHistory();
+}
+
 async function renderHistoryFilters(){
-  const fs=document.getElementById('hist-farm-filter');
-  fs.innerHTML=`<option value="all">All Farms</option>${FARMS.map(i=>`<option value="${i}">${farmNames[i]}</option>`).join('')}`;
-  // gather months from both tables
+  const farmOpts = `<option value="all">All Farms</option>${FARMS.map(i=>`<option value="${i}">${farmNames[i]}</option>`).join('')}`;
+  document.getElementById('hist-farm-filter').innerHTML = farmOpts;
+  document.getElementById('hist-day-farm-filter').innerHTML = farmOpts;
+  document.getElementById('hist-day-date').value = today();
   setLoading(true);
   try {
     const [invRows, saleRows] = await Promise.all([
       sbGet('inventory','select=date&order=date.desc'),
       sbGet('sales','select=date&order=date.desc')
     ]);
-    const months=new Set([
+    const months = new Set([
       ...invRows.map(r=>monthKey(r.date)),
       ...saleRows.map(r=>monthKey(r.date))
     ]);
-    const sorted=[...months].filter(Boolean).sort().reverse();
-    const ms=document.getElementById('hist-month-filter');
-    const cur=ms.value||(sorted[0]||monthKey(today()));
-    ms.innerHTML=sorted.length
+    const sorted = [...months].filter(Boolean).sort().reverse();
+    const ms = document.getElementById('hist-month-filter');
+    const cur = ms.value||(sorted[0]||monthKey(today()));
+    ms.innerHTML = sorted.length
       ? sorted.map(m=>`<option value="${m}" ${m===cur?'selected':''}>${fmtMonth(m)}</option>`).join('')
       : `<option value="${monthKey(today())}">${fmtMonth(monthKey(today()))}</option>`;
   } catch(e){}
   setLoading(false);
 }
 
-async function renderHistory(){
-  const farmF  = document.getElementById('hist-farm-filter').value;
-  const typeF  = document.getElementById('hist-type-filter').value;
-  const monthF = document.getElementById('hist-month-filter').value || monthKey(today());
-  const [y,m]  = monthF.split('-');
-  const dateGte= `${monthF}-01`;
-  const dateLt = `${y}-${String(parseInt(m)+1).padStart(2,'0')}-01`;
-
-  setLoading(true);
-  const rows=[];
-  try {
-    if(typeF==='all'||typeF==='inventory'){
-      let q=`farm_index=${farmF==='all'?'gte.0':'eq.'+farmF}&date=gte.${dateGte}&date=lt.${dateLt}&trays=gt.0,pcs=gt.0&select=date,farm_index,size,trays,pcs&order=date.desc`;
-      // simpler: get all for month, filter client-side for nonzero
-      const r=await sbGet('inventory',
-        `${farmF==='all'?'':'farm_index=eq.'+farmF+'&'}date=gte.${dateGte}&date=lt.${dateLt}&select=date,farm_index,size,trays,pcs&order=date.desc`);
-      r.filter(r=>r.trays>0||r.pcs>0).forEach(r=>{
-        rows.push({date:r.date,type:'inventory',farmLabel:farmNames[r.farm_index],size:r.size,qty:r.trays*TRAY+r.pcs,total:null});
-      });
-    }
-    if(typeF==='all'||typeF==='sale'){
-      const r=await sbGet('sales',
-        `date=gte.${dateGte}&date=lt.${dateLt}&select=date,size,pcs_total,total&order=date.desc`);
-      r.forEach(r=>{
-        rows.push({date:r.date,type:'sale',farmLabel:'Combined',size:r.size,qty:r.pcs_total,total:parseFloat(r.total)});
-      });
-    }
-  } catch(e){ toast('Failed to load history.',true); setLoading(false); return; }
-  setLoading(false);
-
-  rows.sort((a,b)=>b.date.localeCompare(a.date));
-
-  const totalInv =rows.filter(r=>r.type==='inventory').reduce((s,r)=>s+r.qty,0);
-  const totalSold=rows.filter(r=>r.type==='sale').reduce((s,r)=>s+r.qty,0);
-  const totalRev =rows.filter(r=>r.type==='sale').reduce((s,r)=>s+(r.total||0),0);
-  document.getElementById('hist-stats').innerHTML=`
+function buildStatsHtml(rows){
+  const totalInv  = rows.filter(r=>r.type==='inventory').reduce((s,r)=>s+r.qty,0);
+  const totalSold = rows.filter(r=>r.type==='sale').reduce((s,r)=>s+r.qty,0);
+  const totalRev  = rows.filter(r=>r.type==='sale').reduce((s,r)=>s+(r.total||0),0);
+  return `
     <div class="stat-card"><div class="sc-label">Eggs Collected</div><div class="sc-val">${totalInv.toLocaleString()}</div><div class="sc-sub">pieces</div></div>
     <div class="stat-card"><div class="sc-label">Eggs Sold</div><div class="sc-val">${totalSold.toLocaleString()}</div><div class="sc-sub">pieces</div></div>
     <div class="stat-card"><div class="sc-label">Revenue</div><div class="sc-val" style="font-size:1.2rem">${fmtP(totalRev)}</div><div class="sc-sub">this period</div></div>`;
+}
 
-  const body=document.getElementById('hist-body');
-  if(rows.length===0){
-    body.innerHTML=`<tr><td colspan="6"><div class="empty"><div class="empty-icon">📅</div>No records for this period</div></td></tr>`;
-    return;
-  }
-  body.innerHTML=rows.map(r=>`<tr>
+function buildHistTableHtml(rows){
+  if(rows.length===0) return `<tr><td colspan="6"><div class="empty"><div class="empty-icon">📅</div>No records for this period</div></td></tr>`;
+  return rows.map(r=>`<tr>
     <td>${fmtDate(r.date)}</td>
     <td><span class="badge ${r.type==='sale'?'badge-sale':'badge-inv'}">${r.type==='sale'?'Sale':'Collection'}</span></td>
     <td>${r.farmLabel}</td>
@@ -818,6 +829,54 @@ async function renderHistory(){
     <td>${r.qty.toLocaleString()}</td>
     <td>${r.total!==null?fmtP(r.total):'—'}</td>
   </tr>`).join('');
+}
+
+async function fetchHistRows(farmF, typeF, dateGte, dateLt){
+  const rows = [];
+  if(typeF==='all'||typeF==='inventory'){
+    const r = await sbGet('inventory',
+      `${farmF==='all'?'':'farm_index=eq.'+farmF+'&'}date=gte.${dateGte}&date=lte.${dateLt}&select=date,farm_index,size,trays,pcs&order=date.desc`);
+    r.filter(r=>r.trays>0||r.pcs>0).forEach(r=>{
+      rows.push({date:r.date,type:'inventory',farmLabel:farmNames[r.farm_index],size:r.size,qty:r.trays*TRAY+r.pcs,total:null});
+    });
+  }
+  if(typeF==='all'||typeF==='sale'){
+    const r = await sbGet('sales',
+      `date=gte.${dateGte}&date=lte.${dateLt}&select=date,size,pcs_total,total&order=date.desc`);
+    r.forEach(r=>{
+      rows.push({date:r.date,type:'sale',farmLabel:'Combined',size:r.size,qty:r.pcs_total,total:parseFloat(r.total)});
+    });
+  }
+  return rows.sort((a,b)=>b.date.localeCompare(a.date));
+}
+
+async function renderHistory(){
+  const farmF  = document.getElementById('hist-farm-filter').value;
+  const typeF  = document.getElementById('hist-type-filter').value;
+  const monthF = document.getElementById('hist-month-filter').value || monthKey(today());
+  const [y,m]  = monthF.split('-');
+  const dateGte = `${monthF}-01`;
+  const dateLt  = `${y}-${String(parseInt(m)+1).padStart(2,'0')}-01`;
+  setLoading(true);
+  try {
+    const rows = await fetchHistRows(farmF, typeF, dateGte, dateLt);
+    document.getElementById('hist-stats').innerHTML = buildStatsHtml(rows);
+    document.getElementById('hist-body').innerHTML  = buildHistTableHtml(rows);
+  } catch(e){ toast('Failed to load history.',true); }
+  setLoading(false);
+}
+
+async function renderDayHistory(){
+  const farmF = document.getElementById('hist-day-farm-filter').value;
+  const typeF = document.getElementById('hist-day-type-filter').value;
+  const date  = document.getElementById('hist-day-date').value || today();
+  setLoading(true);
+  try {
+    const rows = await fetchHistRows(farmF, typeF, date, date);
+    document.getElementById('hist-stats').innerHTML = buildStatsHtml(rows);
+    document.getElementById('hist-body').innerHTML  = buildHistTableHtml(rows);
+  } catch(e){ toast('Failed to load history.',true); }
+  setLoading(false);
 }
 
 // ─── SETTINGS ────────────────────────────────────────────────────────────────
