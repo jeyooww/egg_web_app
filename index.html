@@ -741,9 +741,9 @@ async function openInvEdit(date){
     const v = invEditDay[size]||{trays:0,pcs:0};
     return `
       <div class="modal-field"><label>${size} — Trays</label>
-        <input type="number" min="0" id="ie-${size}-trays" value="${v.trays||0}" style="width:80px;text-align:center"/></div>
+        <input type="number" min="0" id="ie-${size}-trays" value="${v.trays||0}" style="width:120px;text-align:center"/></div>
       <div class="modal-field"><label>${size} — Pcs</label>
-        <input type="number" min="0" id="ie-${size}-pcs" value="${v.pcs||0}" style="width:80px;text-align:center"/></div>`;
+        <input type="number" min="0" id="ie-${size}-pcs" value="${v.pcs||0}" style="width:120px;text-align:center"/></div>`;
   }).join('');
   document.getElementById('inv-modal').classList.remove('hidden');
 }
