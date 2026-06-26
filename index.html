@@ -386,7 +386,8 @@ async function sbUpsert(table, body){
     'Authorization': 'Bearer ' + SUPABASE_KEY,
     'Prefer': 'resolution=merge-duplicates'
   };
-  const r = await fetch(`${SUPABASE_URL}/rest/v1/${table}`, {method:'POST', headers:h, body:JSON.stringify(body)});
+  const conflict = table === 'inventory' ? '?on_conflict=farm_index,date,size' : '';
+  const r = await fetch(`${SUPABASE_URL}/rest/v1/${table}${conflict}`, {method:'POST', headers:h, body:JSON.stringify(body)});
   if(!r.ok) throw new Error(await r.text());
 }
 async function sbInsert(table, body){
@@ -741,9 +742,9 @@ async function openInvEdit(date){
     const v = invEditDay[size]||{trays:0,pcs:0};
     return `
       <div class="modal-field"><label>${size} — Trays</label>
-        <input type="number" min="0" id="ie-${size}-trays" value="${v.trays||0}" style="width:250px;text-align:center"/></div>
+        <input type="number" min="0" id="ie-${size}-trays" value="${v.trays||0}" style="width:80px;text-align:center"/></div>
       <div class="modal-field"><label>${size} — Pcs</label>
-        <input type="number" min="0" id="ie-${size}-pcs" value="${v.pcs||0}" style="width:250px;text-align:center"/></div>`;
+        <input type="number" min="0" id="ie-${size}-pcs" value="${v.pcs||0}" style="width:80px;text-align:center"/></div>`;
   }).join('');
   document.getElementById('inv-modal').classList.remove('hidden');
 }
