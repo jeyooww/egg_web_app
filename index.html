@@ -104,7 +104,26 @@ tfoot td:first-child{text-align:left;font-family:var(--sans);font-weight:700;}
 .btn-record:hover{background:#333;}
 .btn-record:disabled{background:var(--border);cursor:not-allowed;}
 
-/* TOAST */
+/* MODAL */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:500;display:flex;align-items:center;justify-content:center;padding:1rem;}
+.modal-overlay.hidden{display:none;}
+.modal{background:var(--surface);border-radius:14px;padding:1.5rem;width:100%;max-width:420px;box-shadow:0 20px 60px rgba(0,0,0,.2);}
+.modal-title{font-weight:700;font-size:1rem;margin-bottom:1.25rem;}
+.modal-field{display:flex;flex-direction:column;gap:.35rem;margin-bottom:.85rem;}
+.modal-field label{font-size:.78rem;font-weight:500;color:var(--muted);}
+.modal-field input,.modal-field select{font:400 .9rem var(--sans);background:var(--bg);border:1.5px solid var(--border);border-radius:8px;padding:.5rem .75rem;color:var(--text);outline:none;}
+.modal-field input:focus,.modal-field select:focus{border-color:var(--amber-mid);}
+.modal-actions{display:flex;gap:.5rem;justify-content:flex-end;margin-top:1.25rem;}
+.btn-cancel{font:500 .88rem var(--sans);border:1.5px solid var(--border);background:var(--bg);border-radius:8px;padding:.55rem 1.1rem;cursor:pointer;}
+.btn-danger{font:600 .88rem var(--sans);border:none;background:var(--red);color:#fff;border-radius:8px;padding:.55rem 1.1rem;cursor:pointer;}
+.btn-save{font:600 .88rem var(--sans);border:none;background:var(--amber-mid);color:#fff;border-radius:8px;padding:.55rem 1.1rem;cursor:pointer;}
+
+/* ACTION BUTTONS IN TABLE */
+.row-actions{display:flex;gap:.3rem;justify-content:flex-end;}
+.btn-edit{font:500 .72rem var(--sans);border:1px solid var(--border);background:var(--bg);border-radius:5px;padding:.22rem .55rem;cursor:pointer;color:var(--text);}
+.btn-edit:hover{border-color:var(--amber-mid);background:var(--amber-lt);}
+.btn-del{font:500 .72rem var(--sans);border:1px solid var(--border);background:var(--bg);border-radius:5px;padding:.22rem .55rem;cursor:pointer;color:var(--red);}
+.btn-del:hover{background:var(--red-lt);border-color:var(--red);}
 .toast{position:fixed;bottom:1.5rem;left:50%;transform:translateX(-50%) translateY(80px);background:var(--header);color:#fff;padding:.65rem 1.4rem;border-radius:99px;font:500 .85rem var(--sans);opacity:0;transition:all .3s;pointer-events:none;z-index:9999;white-space:nowrap;}
 .toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
 .toast.error{background:var(--red);}
@@ -212,7 +231,7 @@ tfoot td:first-child{text-align:left;font-family:var(--sans);font-weight:700;}
     <div class="table-wrap">
       <table>
         <thead><tr>
-          <th>Time</th><th>Size</th><th style="text-align:right">Qty</th><th style="text-align:right">Pieces</th><th style="text-align:right">Total</th>
+          <th>Time</th><th>Size</th><th style="text-align:right">Qty</th><th style="text-align:right">Pieces</th><th style="text-align:right">Total</th><th></th>
         </tr></thead>
         <tbody id="today-sales-body"></tbody>
         <tfoot id="today-sales-foot"></tfoot>
@@ -264,6 +283,44 @@ tfoot td:first-child{text-align:left;font-family:var(--sans);font-weight:700;}
 </div>
 
 </main>
+
+<!-- EDIT INVENTORY MODAL -->
+<div class="modal-overlay hidden" id="inv-modal">
+  <div class="modal">
+    <div class="modal-title" id="inv-modal-title">Edit Collection</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:.75rem" id="inv-modal-fields"></div>
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="closeModal('inv-modal')">Cancel</button>
+      <button class="btn-save" onclick="saveInvEdit()">Save</button>
+    </div>
+  </div>
+</div>
+
+<!-- EDIT SALE MODAL -->
+<div class="modal-overlay hidden" id="sale-modal">
+  <div class="modal">
+    <div class="modal-title">Edit Sale</div>
+    <div class="modal-field">
+      <label>Size</label>
+      <select id="sm-size"></select>
+    </div>
+    <div class="modal-field">
+      <label>Unit</label>
+      <select id="sm-unit">
+        <option value="pcs">Pieces</option>
+        <option value="tray">Trays (30 pcs)</option>
+      </select>
+    </div>
+    <div class="modal-field">
+      <label>Quantity</label>
+      <input type="number" min="1" id="sm-qty"/>
+    </div>
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="closeModal('sale-modal')">Cancel</button>
+      <button class="btn-save" onclick="saveSaleEdit()">Save</button>
+    </div>
+  </div>
+</div>
 <div class="toast" id="toast"></div>
 
 <script>
@@ -278,6 +335,10 @@ const headers = {
   'Prefer': 'return=representation'
 };
 
+async function sbPatch(table, params, body){
+  const r = await fetch(`${SUPABASE_URL}/rest/v1/${table}?${params}`, {method:'PATCH', headers, body:JSON.stringify(body)});
+  if(!r.ok) throw new Error(await r.text());
+}
 async function sbGet(table, params=''){
   const r = await fetch(`${SUPABASE_URL}/rest/v1/${table}?${params}`, {headers});
   if(!r.ok) throw new Error(await r.text());
@@ -444,22 +505,21 @@ async function saveInventoryDay(){
 
 async function renderInvHistory(){
   const rows = await sbGet('inventory',
-    `farm_index=eq.${invFarm}&select=date,size,trays,pcs&order=date.desc&limit=210`);
+    `farm_index=eq.${invFarm}&select=id,date,size,trays,pcs&order=date.desc&limit=210`);
 
-  // group by date
   const byDate={};
   rows.forEach(r=>{
     if(!byDate[r.date]) byDate[r.date]={};
-    byDate[r.date][r.size]={trays:r.trays,pcs:r.pcs};
+    byDate[r.date][r.size]={id:r.id, trays:r.trays, pcs:r.pcs};
   });
   const dates = Object.keys(byDate).sort().reverse().slice(0,14);
 
   document.getElementById('inv-history-head').innerHTML =
-    `<th>Date</th>${SIZES.map(s=>`<th>${s}</th>`).join('')}<th>Total</th>`;
+    `<th>Date</th>${SIZES.map(s=>`<th>${s}</th>`).join('')}<th>Total</th><th></th>`;
 
   if(dates.length===0){
     document.getElementById('inv-history-body').innerHTML =
-      `<tr><td colspan="${SIZES.length+2}"><div class="empty"><div class="empty-icon">🥚</div>No records yet</div></td></tr>`;
+      `<tr><td colspan="${SIZES.length+3}"><div class="empty"><div class="empty-icon">🥚</div>No records yet</div></td></tr>`;
     document.getElementById('inv-history-foot').innerHTML='';
     return;
   }
@@ -478,15 +538,22 @@ async function renderInvHistory(){
       if(v.pcs)   label.push(`${v.pcs}pc`);
       return `<td class="${n===0?'zero':''}">${label.join('+')||'—'}</td>`;
     }).join('');
-    return `<tr><td>${fmtDate(d)}</td>${cells}<td><strong>${rowTotal||'—'}</strong></td></tr>`;
+    return `<tr>
+      <td>${fmtDate(d)}</td>${cells}
+      <td><strong>${rowTotal||'—'}</strong></td>
+      <td><div class="row-actions">
+        <button class="btn-edit" onclick="openInvEdit('${d}',${JSON.stringify(JSON.stringify(day))})">Edit</button>
+        <button class="btn-del" onclick="deleteInvDay('${d}')">Delete</button>
+      </div></td>
+    </tr>`;
   }).join('');
   document.getElementById('inv-history-foot').innerHTML =
-    `<tr><td>Total</td>${SIZES.map(s=>`<td>${totals[s]||'—'}</td>`).join('')}<td>${grand}</td></tr>`;
+    `<tr><td>Total</td>${SIZES.map(s=>`<td>${totals[s]||'—'}</td>`).join('')}<td>${grand}</td><td></td></tr>`;
 }
 
 // ─── SALES ───────────────────────────────────────────────────────────────────
-// let posSelected = null;
-// let posUnit     = 'pcs';
+let posSelected = null;
+let posUnit     = 'pcs';
 
 function renderPOS(){
   document.getElementById('pos-sizes').innerHTML = SIZES.map(s=>
@@ -544,31 +611,126 @@ async function recordSale(){
 
 async function loadTodaySales(){
   try {
-    const rows = await sbGet('sales', `date=eq.${today()}&select=created_at,size,unit,qty,pcs_total,total&order=created_at.desc`);
+    const rows = await sbGet('sales', `date=eq.${today()}&select=id,created_at,size,unit,qty,pcs_total,total&order=created_at.desc`);
     const body = document.getElementById('today-sales-body');
     const foot = document.getElementById('today-sales-foot');
     if(rows.length===0){
-      body.innerHTML=`<tr><td colspan="5"><div class="empty"><div class="empty-icon">📋</div>No sales recorded today</div></td></tr>`;
+      body.innerHTML=`<tr><td colspan="6"><div class="empty"><div class="empty-icon">📋</div>No sales recorded today</div></td></tr>`;
       foot.innerHTML=''; return;
     }
     body.innerHTML = rows.map(r=>{
       const time = new Date(r.created_at).toLocaleTimeString('en-PH',{hour:'2-digit',minute:'2-digit'});
       const qtyLabel = r.unit==='tray' ? `${r.qty} tray(s)` : `${r.qty} pcs`;
       return `<tr>
-        <td style="text-align:left;font-family:var(--sans)">${time}</td>
+        <td style="text-align:left;font-family:var(--sans);font-size:.82rem">${time}</td>
         <td style="text-align:left;font-family:var(--sans)">${r.size}</td>
         <td>${qtyLabel}</td>
         <td>${r.pcs_total}</td>
         <td>${fmtP(r.total)}</td>
+        <td><div class="row-actions">
+          <button class="btn-edit" onclick="openSaleEdit(${r.id},'${r.size}','${r.unit}',${r.qty})">Edit</button>
+          <button class="btn-del" onclick="deleteSale(${r.id})">Delete</button>
+        </div></td>
       </tr>`;
     }).join('');
     const totalPcs = rows.reduce((s,r)=>s+r.pcs_total,0);
     const totalRev = rows.reduce((s,r)=>s+parseFloat(r.total),0);
-    foot.innerHTML=`<tr><td>Total</td><td></td><td></td><td>${totalPcs}</td><td>${fmtP(totalRev)}</td></tr>`;
-  } catch(e){}
+    foot.innerHTML=`<tr><td>Total</td><td></td><td></td><td>${totalPcs}</td><td>${fmtP(totalRev)}</td><td></td></tr>`;
+  } catch(e){ toast('Could not load today\'s sales',true); }
 }
 
-// ─── HISTORY ─────────────────────────────────────────────────────────────────
+// ─── SALE EDIT / DELETE ───────────────────────────────────────────────────────
+let saleEditId = null;
+
+function openSaleEdit(id, size, unit, qty){
+  saleEditId = id;
+  const sel = document.getElementById('sm-size');
+  sel.innerHTML = SIZES.map(s=>`<option value="${s}" ${s===size?'selected':''}>${s}</option>`).join('');
+  document.getElementById('sm-unit').value = unit;
+  document.getElementById('sm-qty').value  = qty;
+  document.getElementById('sale-modal').classList.remove('hidden');
+}
+
+async function saveSaleEdit(){
+  const size  = document.getElementById('sm-size').value;
+  const unit  = document.getElementById('sm-unit').value;
+  const qty   = parseInt(document.getElementById('sm-qty').value)||0;
+  if(qty<1){ toast('Quantity must be at least 1',true); return; }
+  const pcsTotal  = unit==='pcs' ? qty : qty*TRAY;
+  const unitPrice = unit==='pcs' ? (prices[size]?.pcs||0) : (prices[size]?.tray||0);
+  const total     = qty * unitPrice;
+  setLoading(true);
+  try {
+    await sbPatch('sales', `id=eq.${saleEditId}`, {size, unit, qty, pcs_total:pcsTotal, unit_price:unitPrice, total});
+    toast('Sale updated');
+    closeModal('sale-modal');
+    loadTodaySales();
+  } catch(e){ toast('Update failed: '+e.message, true); }
+  setLoading(false);
+}
+
+async function deleteSale(id){
+  if(!confirm('Delete this sale record?')) return;
+  setLoading(true);
+  try {
+    await sbDelete('sales', `id=eq.${id}`);
+    toast('Sale deleted');
+    loadTodaySales();
+  } catch(e){ toast('Delete failed: '+e.message, true); }
+  setLoading(false);
+}
+
+// ─── INVENTORY EDIT / DELETE ─────────────────────────────────────────────────
+let invEditDate = null;
+let invEditDay  = null;
+
+function openInvEdit(date, dayJson){
+  invEditDate = date;
+  invEditDay  = JSON.parse(dayJson);
+  document.getElementById('inv-modal-title').textContent = `Edit — ${fmtDate(date)} · ${farmNames[invFarm]}`;
+  document.getElementById('inv-modal-fields').innerHTML = SIZES.map(size=>{
+    const v = invEditDay[size]||{trays:0,pcs:0};
+    return `
+      <div class="modal-field"><label>${size} — Trays</label>
+        <input type="number" min="0" id="ie-${size}-trays" value="${v.trays||0}"/></div>
+      <div class="modal-field"><label>${size} — Pcs</label>
+        <input type="number" min="0" id="ie-${size}-pcs" value="${v.pcs||0}"/></div>`;
+  }).join('');
+  document.getElementById('inv-modal').classList.remove('hidden');
+}
+
+async function saveInvEdit(){
+  setLoading(true);
+  try {
+    const rows = SIZES.map(size=>({
+      farm_index: invFarm, date: invEditDate, size,
+      trays: parseInt(document.getElementById(`ie-${size}-trays`)?.value)||0,
+      pcs:   parseInt(document.getElementById(`ie-${size}-pcs`)?.value)||0,
+    }));
+    await sbUpsert('inventory', rows);
+    toast('Collection updated');
+    closeModal('inv-modal');
+    await loadInventoryDay();
+  } catch(e){ toast('Update failed: '+e.message, true); }
+  setLoading(false);
+}
+
+async function deleteInvDay(date){
+  if(!confirm(`Delete all collection records for ${fmtDate(date)} on ${farmNames[invFarm]}?`)) return;
+  setLoading(true);
+  try {
+    await sbDelete('inventory', `farm_index=eq.${invFarm}&date=eq.${date}`);
+    toast('Records deleted');
+    await renderInvHistory();
+  } catch(e){ toast('Delete failed: '+e.message, true); }
+  setLoading(false);
+}
+
+// ─── MODAL HELPERS ────────────────────────────────────────────────────────────
+function closeModal(id){ document.getElementById(id).classList.add('hidden'); }
+document.addEventListener('click', e=>{
+  if(e.target.classList.contains('modal-overlay')) e.target.classList.add('hidden');
+});
 async function renderHistoryFilters(){
   const fs=document.getElementById('hist-farm-filter');
   fs.innerHTML=`<option value="all">All Farms</option>${FARMS.map(i=>`<option value="${i}">${farmNames[i]}</option>`).join('')}`;
