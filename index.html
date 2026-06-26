@@ -214,6 +214,7 @@ tfoot td:first-child{text-align:left;font-family:var(--sans);font-weight:700;}
     <div class="section-label">Unit</div>
     <div class="unit-toggle">
       <button class="unit-btn selected" id="unit-pcs" onclick="selectUnit('pcs')">Pieces</button>
+      <button class="unit-btn" id="unit-half" onclick="selectUnit('half')">Half Tray (15 pcs)</button>
       <button class="unit-btn" id="unit-tray" onclick="selectUnit('tray')">Trays (30 pcs)</button>
     </div>
 
@@ -308,6 +309,7 @@ tfoot td:first-child{text-align:left;font-family:var(--sans);font-weight:700;}
       <label>Unit</label>
       <select id="sm-unit">
         <option value="pcs">Pieces</option>
+        <option value="half">Half Tray (15 pcs)</option>
         <option value="tray">Trays (30 pcs)</option>
       </select>
     </div>
@@ -552,8 +554,8 @@ async function renderInvHistory(){
 }
 
 // ─── SALES ───────────────────────────────────────────────────────────────────
-// let posSelected = null;
-// let posUnit     = 'pcs';
+let posSelected = null;
+let posUnit     = 'pcs';
 
 function renderPOS(){
   document.getElementById('pos-sizes').innerHTML = SIZES.map(s=>
@@ -572,8 +574,15 @@ function selectSize(s){
 function selectUnit(u){
   posUnit = u;
   document.getElementById('unit-pcs').classList.toggle('selected', u==='pcs');
+  document.getElementById('unit-half').classList.toggle('selected', u==='half');
   document.getElementById('unit-tray').classList.toggle('selected', u==='tray');
   updateSalesPreview();
+}
+
+function getPcsTotal(unit, qty){ return unit==='pcs' ? qty : unit==='half' ? qty*15 : qty*30; }
+function getUnitPrice(unit, size){
+  const p = prices[size]||{};
+  return unit==='pcs' ? (p.pcs||0) : unit==='half' ? (p.half||0) : (p.tray||0);
 }
 
 function updateSalesPreview(){
@@ -583,9 +592,9 @@ function updateSalesPreview(){
   const ok = posSelected && qty > 0;
   btn.disabled = !ok;
   if(!ok){ preview.innerHTML=''; return; }
-  const pcsTotal = posUnit==='pcs' ? qty : qty*TRAY;
-  const unitPrice = posUnit==='pcs' ? (prices[posSelected]?.pcs||0) : (prices[posSelected]?.tray||0);
-  const total = qty * unitPrice;
+  const pcsTotal  = getPcsTotal(posUnit, qty);
+  const unitPrice = getUnitPrice(posUnit, posSelected);
+  const total     = qty * unitPrice;
   preview.innerHTML = `<strong>${pcsTotal} pcs</strong> · ${fmtP(total)}`;
 }
 
@@ -594,13 +603,14 @@ async function recordSale(){
   if(!posSelected || qty===0) return;
   const btn = document.getElementById('btn-record');
   btn.disabled=true; btn.textContent='Saving…';
-  const pcsTotal  = posUnit==='pcs' ? qty : qty*TRAY;
-  const unitPrice = posUnit==='pcs' ? (prices[posSelected]?.pcs||0) : (prices[posSelected]?.tray||0);
+  const pcsTotal  = getPcsTotal(posUnit, qty);
+  const unitPrice = getUnitPrice(posUnit, posSelected);
   const total     = qty * unitPrice;
   setLoading(true);
   try {
     await sbInsert('sales',[{ date:today(), size:posSelected, unit:posUnit, qty, pcs_total:pcsTotal, unit_price:unitPrice, total }]);
-    toast(`Recorded: ${qty} ${posUnit==='tray'?'tray(s)':'pcs'} of ${posSelected} · ${fmtP(total)}`);
+    const unitLabel = posUnit==='pcs' ? 'pcs' : posUnit==='half' ? 'half tray(s)' : 'tray(s)';
+    toast(`Recorded: ${qty} ${unitLabel} of ${posSelected} · ${fmtP(total)}`);
     document.getElementById('sale-qty').value='';
     updateSalesPreview();
     loadTodaySales();
@@ -656,8 +666,8 @@ async function saveSaleEdit(){
   const unit  = document.getElementById('sm-unit').value;
   const qty   = parseInt(document.getElementById('sm-qty').value)||0;
   if(qty<1){ toast('Quantity must be at least 1',true); return; }
-  const pcsTotal  = unit==='pcs' ? qty : qty*TRAY;
-  const unitPrice = unit==='pcs' ? (prices[size]?.pcs||0) : (prices[size]?.tray||0);
+  const pcsTotal  = getPcsTotal(unit, qty);
+  const unitPrice = getUnitPrice(unit, size);
   const total     = qty * unitPrice;
   setLoading(true);
   try {
@@ -824,7 +834,10 @@ function renderSettings(){
         <div class="price-input-wrap"><div class="price-sub">Per Piece</div>
           <input type="number" min="0" step="0.01" id="price-${s}-pcs" value="${prices[s]?.pcs||0}"/>
         </div>
-        <div class="price-input-wrap"><div class="price-sub">Per Tray</div>
+        <div class="price-input-wrap"><div class="price-sub">Half Tray</div>
+          <input type="number" min="0" step="0.01" id="price-${s}-half" value="${prices[s]?.half||0}"/>
+        </div>
+        <div class="price-input-wrap" style="grid-column:span 2"><div class="price-sub">Per Tray</div>
           <input type="number" min="0" step="0.01" id="price-${s}-tray" value="${prices[s]?.tray||0}"/>
         </div>
       </div>
@@ -836,6 +849,7 @@ async function saveSettings(){
   SIZES.forEach(s=>{
     prices[s]={
       pcs:  parseFloat(document.getElementById(`price-${s}-pcs`)?.value)||0,
+      half: parseFloat(document.getElementById(`price-${s}-half`)?.value)||0,
       tray: parseFloat(document.getElementById(`price-${s}-tray`)?.value)||0,
     };
   });
