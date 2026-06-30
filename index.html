@@ -639,8 +639,6 @@ function selectUnit(u){
   posUnit = u;
   ['pcs','half','tray'].forEach(x=>
     document.getElementById('unit-'+x).classList.toggle('selected', x===u));
-  posSelected = null;
-  renderSizeBtns();
   updateSalesPreview();
 }
 
