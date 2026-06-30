@@ -92,8 +92,6 @@ tfoot td:first-child{text-align:left;font-family:var(--sans);font-weight:700;}
 .size-btn:hover{border-color:var(--amber-mid);}
 .size-btn.selected{border-color:var(--amber-mid);background:var(--amber-lt);color:#92400E;}
 .unit-toggle{display:flex;gap:.4rem;margin-bottom:1.25rem;}
-.size-btn .sprice,.size-btn .sprice{display:block;font:500 .7rem var(--mono);color:var(--muted);margin-top:.2rem;}
-.size-btn.selected .sprice{color:#92400E;}
 .unit-btn{flex:1;padding:.55rem;border-radius:8px;border:2px solid var(--border);background:var(--bg);font:600 .85rem var(--sans);cursor:pointer;transition:all .15s;text-align:center;}
 .unit-btn.selected{border-color:var(--amber-mid);background:var(--amber-lt);color:#92400E;}
 .sales-qty-row{display:flex;align-items:center;gap:.75rem;margin-bottom:1.25rem;}
@@ -147,18 +145,8 @@ tfoot td:first-child{text-align:left;font-family:var(--sans);font-weight:700;}
 .farm-name-wrap input{font:600 .9rem var(--sans);background:var(--bg);border:1.5px solid var(--border);border-radius:7px;padding:.4rem .65rem;color:var(--text);outline:none;width:100%;}
 .farm-name-wrap input:focus{border-color:var(--amber-mid);}
 
-/* BASKET ITEMS */
-.basket-item{display:flex;align-items:center;justify-content:space-between;padding:.45rem .6rem;background:var(--bg);border-radius:7px;margin-bottom:.35rem;font-size:.88rem;}
-.basket-item-name{font-weight:600;}
-.basket-item-detail{color:var(--muted);font-size:.78rem;}
-.basket-item-right{display:flex;align-items:center;gap:.75rem;}
-.basket-item-price{font:600 .85rem var(--mono);}
-.basket-qty-ctrl{display:flex;align-items:center;gap:.3rem;}
-.basket-qty-ctrl button{width:24px;height:24px;border-radius:5px;border:1.5px solid var(--border);background:var(--surface);font-size:.9rem;cursor:pointer;display:flex;align-items:center;justify-content:center;line-height:1;}
-.basket-qty-ctrl button:hover{border-color:var(--amber-mid);}
-.basket-qty-ctrl span{font:600 .88rem var(--mono);min-width:20px;text-align:center;}
-
 /* HISTORY VIEW TOGGLE */
+.hist-view-toggle{display:flex;gap:4px;background:var(--border);border-radius:9px;padding:3px;width:fit-content;margin-bottom:1rem;}
 .hv-btn{background:none;border:none;font:600 .83rem var(--sans);padding:.38rem 1.1rem;border-radius:7px;cursor:pointer;color:var(--muted);transition:all .15s;}
 .hv-btn.active{background:var(--surface);color:var(--text);box-shadow:0 1px 3px rgba(0,0,0,.1);}
 
@@ -231,46 +219,23 @@ tfoot td:first-child{text-align:left;font-family:var(--sans);font-weight:700;}
 <!-- SALES -->
 <div class="page" id="page-pos">
   <div class="sales-form">
+    <div class="section-label" style="margin-top:0">Size</div>
+    <div class="size-grid" id="pos-sizes"></div>
 
-    <div class="section-label" style="margin-top:0">1. Unit</div>
+    <div class="section-label">Unit</div>
     <div class="unit-toggle">
-      <button class="unit-btn selected" id="unit-pcs"  onclick="selectUnit('pcs')">Pieces</button>
-      <button class="unit-btn"          id="unit-half" onclick="selectUnit('half')">Half Tray (15 pcs)</button>
-      <button class="unit-btn"          id="unit-tray" onclick="selectUnit('tray')">Tray (30 pcs)</button>
+      <button class="unit-btn selected" id="unit-pcs" onclick="selectUnit('pcs')">Pieces</button>
+      <button class="unit-btn" id="unit-half" onclick="selectUnit('half')">Half Tray (15 pcs)</button>
+      <button class="unit-btn" id="unit-tray" onclick="selectUnit('tray')">Trays (30 pcs)</button>
     </div>
 
-    <!-- TRAY / HALF TRAY MODE -->
-    <div id="tray-mode">
-      <div class="section-label">2. Tap a size to add — tap again to add more</div>
-      <div class="size-grid" id="pos-sizes-tray"></div>
-
-      <!-- running basket -->
-      <div id="tray-basket" style="display:none;margin-bottom:1rem;">
-        <div class="section-label" style="margin-top:0">Order</div>
-        <div id="tray-basket-items"></div>
-        <div style="display:flex;align-items:center;justify-content:space-between;margin-top:.75rem;gap:.5rem;flex-wrap:wrap">
-          <span style="font:600 .9rem var(--mono)" id="tray-basket-total">₱0.00</span>
-          <div style="display:flex;gap:.5rem">
-            <button class="btn-outline" onclick="clearBasket()">Clear</button>
-            <button class="btn-record" id="btn-record-tray" onclick="recordTrayOrder()">Record Sale</button>
-          </div>
-        </div>
-      </div>
+    <div class="sales-qty-row">
+      <label>Quantity</label>
+      <input type="number" id="sale-qty" min="1" placeholder="0" oninput="updateSalesPreview()"/>
+      <span class="sales-preview" id="sales-preview"></span>
     </div>
 
-    <!-- PIECES MODE -->
-    <div id="pcs-mode" style="display:none">
-      <div class="section-label">2. Select size</div>
-      <div class="size-grid" id="pos-sizes-pcs"></div>
-
-      <div class="sales-qty-row">
-        <label>Quantity (pcs)</label>
-        <input type="number" id="sale-qty" min="1" placeholder="0" oninput="updatePcsPreview()"/>
-        <span class="sales-preview" id="sales-preview"></span>
-      </div>
-      <button class="btn-record" id="btn-record-pcs" onclick="recordPcsSale()" disabled>Record Sale</button>
-    </div>
-
+    <button class="btn-record" id="btn-record" onclick="recordSale()" disabled>Record Sale</button>
   </div>
 
   <div class="section-label">Today's Sales</div>
@@ -441,13 +406,7 @@ const FARMS = [0,1,2];
 const TRAY  = 30;
 
 // ─── HELPERS (defined early so state init can use them) ───────────────────────
-function today(){
-  const d = new Date();
-  const y = d.getFullYear();
-  const m = String(d.getMonth()+1).padStart(2,'0');
-  const dd = String(d.getDate()).padStart(2,'0');
-  return `${y}-${m}-${dd}`;
-}
+function today(){ return new Date().toISOString().split('T')[0]; }
 function fmtDate(d){ if(!d)return''; const[y,m,dd]=d.split('-'); return`${dd}/${m}/${y}`; }
 function fmtP(n){ return '₱'+Number(n).toFixed(2); }
 function monthKey(d){ return d?d.slice(0,7):''; }
@@ -462,12 +421,6 @@ let invDate   = today();
 // POS
 let posSelected = null;
 let posUnit     = 'pcs';
-
-function getPcsTotal(unit, qty){ return unit==='pcs' ? qty : unit==='half' ? qty*15 : qty*30; }
-function getUnitPrice(unit, size){
-  const p = prices[size]||{};
-  return unit==='pcs' ? (p.pcs||0) : unit==='half' ? (p.half||0) : (p.tray||0);
-}
 
 // Loading bar
 function setLoading(on){
@@ -638,147 +591,63 @@ async function renderInvHistory(){
 }
 
 // ─── SALES ───────────────────────────────────────────────────────────────────
-// let posUnit     = 'pcs';
-// let posSelected = null;      // for pieces mode
-let basket      = {};        // { size: qty } for tray/half mode
 
 function renderPOS(){
-  selectUnit('pcs');
+  document.getElementById('pos-sizes').innerHTML = SIZES.map(s=>
+    `<button class="size-btn ${posSelected===s?'selected':''}" onclick="selectSize('${s}')">${s}</button>`
+  ).join('');
+  updateSalesPreview();
   loadTodaySales();
+}
+
+function selectSize(s){
+  posSelected = s;
+  document.querySelectorAll('.size-btn').forEach(b=>b.classList.toggle('selected', b.textContent===s));
+  updateSalesPreview();
 }
 
 function selectUnit(u){
   posUnit = u;
-  ['pcs','half','tray'].forEach(x=>
-    document.getElementById('unit-'+x).classList.toggle('selected', x===u));
-  document.getElementById('tray-mode').style.display = u==='pcs' ? 'none' : 'block';
-  document.getElementById('pcs-mode').style.display  = u==='pcs' ? 'block' : 'none';
-  if(u!=='pcs'){ basket={}; renderTraySizes(); renderBasket(); }
-  else { posSelected=null; renderPcsSizes(); updatePcsPreview(); }
+  document.getElementById('unit-pcs').classList.toggle('selected', u==='pcs');
+  document.getElementById('unit-half').classList.toggle('selected', u==='half');
+  document.getElementById('unit-tray').classList.toggle('selected', u==='tray');
+  updateSalesPreview();
 }
 
-// ── TRAY / HALF-TRAY MODE ────────────────────────────────────────────────────
-function renderTraySizes(){
-  document.getElementById('pos-sizes-tray').innerHTML = SIZES.map(s=>{
-    const qty   = basket[s]||0;
-    const price = getUnitPrice(posUnit, s);
-    return `<button class="size-btn ${qty>0?'selected':''}" onclick="tapSize('${s}')">
-      ${s}${qty>0?`<span style="display:block;font-size:.75rem;margin-top:.2rem">×${qty}</span>`:''}
-      <span class="sprice">${fmtP(price)}/${posUnit==='half'?'½ tray':'tray'}</span>
-    </button>`;
-  }).join('');
+function getPcsTotal(unit, qty){ return unit==='pcs' ? qty : unit==='half' ? qty*15 : qty*30; }
+function getUnitPrice(unit, size){
+  const p = prices[size]||{};
+  return unit==='pcs' ? (p.pcs||0) : unit==='half' ? (p.half||0) : (p.tray||0);
 }
 
-function tapSize(s){
-  basket[s] = (basket[s]||0) + 1;
-  renderTraySizes();
-  renderBasket();
-}
-
-function renderBasket(){
-  const sizes = Object.keys(basket).filter(s=>basket[s]>0);
-  const basketEl = document.getElementById('tray-basket');
-  const itemsEl  = document.getElementById('tray-basket-items');
-  if(sizes.length===0){ basketEl.style.display='none'; return; }
-  basketEl.style.display='block';
-  let grandTotal = 0;
-  itemsEl.innerHTML = sizes.map(s=>{
-    const qty   = basket[s];
-    const price = getUnitPrice(posUnit, s);
-    const total = qty * price;
-    grandTotal += total;
-    const pcs   = getPcsTotal(posUnit, qty);
-    return `<div class="basket-item">
-      <div>
-        <div class="basket-item-name">${s}</div>
-        <div class="basket-item-detail">${pcs} pcs · ${fmtP(price)}/${posUnit==='half'?'½ tray':'tray'}</div>
-      </div>
-      <div class="basket-item-right">
-        <div class="basket-qty-ctrl">
-          <button onclick="adjustBasket('${s}',-1)">−</button>
-          <span>${qty}</span>
-          <button onclick="adjustBasket('${s}',1)">+</button>
-        </div>
-        <span class="basket-item-price">${fmtP(total)}</span>
-      </div>
-    </div>`;
-  }).join('');
-  document.getElementById('tray-basket-total').textContent = fmtP(grandTotal);
-}
-
-function adjustBasket(s, delta){
-  basket[s] = Math.max(0, (basket[s]||0)+delta);
-  if(basket[s]===0) delete basket[s];
-  renderTraySizes();
-  renderBasket();
-}
-
-function clearBasket(){ basket={}; renderTraySizes(); renderBasket(); }
-
-async function recordTrayOrder(){
-  const sizes = Object.keys(basket).filter(s=>basket[s]>0);
-  if(sizes.length===0) return;
-  const btn = document.getElementById('btn-record-tray');
-  btn.disabled=true; btn.textContent='Saving…';
-  setLoading(true);
-  try {
-    const rows = sizes.map(s=>({
-      date: today(), size: s, unit: posUnit,
-      qty: basket[s],
-      pcs_total: getPcsTotal(posUnit, basket[s]),
-      unit_price: getUnitPrice(posUnit, s),
-      total: basket[s] * getUnitPrice(posUnit, s)
-    }));
-    await sbInsert('sales', rows);
-    const grand = rows.reduce((t,r)=>t+r.total,0);
-    toast(`Recorded ${rows.length} line(s) · ${fmtP(grand)}`);
-    basket={}; renderTraySizes(); renderBasket();
-    loadTodaySales();
-  } catch(e){ toast('Save failed: '+e.message, true); }
-  btn.disabled=false; btn.textContent='Record Sale';
-  setLoading(false);
-}
-
-// ── PIECES MODE ───────────────────────────────────────────────────────────────
-function renderPcsSizes(){
-  document.getElementById('pos-sizes-pcs').innerHTML = SIZES.map(s=>
-    `<button class="size-btn ${posSelected===s?'selected':''}" onclick="selectSizePcs('${s}')">${s}
-      <span class="sprice">${fmtP(prices[s]?.pcs||0)}/pc</span>
-    </button>`
-  ).join('');
-}
-
-function selectSizePcs(s){
-  posSelected = s;
-  document.querySelectorAll('#pos-sizes-pcs .size-btn').forEach(b=>
-    b.classList.toggle('selected', b.textContent.trim().startsWith(s)));
-  updatePcsPreview();
-}
-
-function updatePcsPreview(){
+function updateSalesPreview(){
   const qty = parseInt(document.getElementById('sale-qty')?.value)||0;
   const preview = document.getElementById('sales-preview');
-  const btn = document.getElementById('btn-record-pcs');
-  const ok = posSelected && qty>0;
-  btn.disabled=!ok;
+  const btn = document.getElementById('btn-record');
+  const ok = posSelected && qty > 0;
+  btn.disabled = !ok;
   if(!ok){ preview.innerHTML=''; return; }
-  const total = qty * (prices[posSelected]?.pcs||0);
-  preview.innerHTML=`<strong>${qty} pcs</strong> · ${fmtP(total)}`;
+  const pcsTotal  = getPcsTotal(posUnit, qty);
+  const unitPrice = getUnitPrice(posUnit, posSelected);
+  const total     = qty * unitPrice;
+  preview.innerHTML = `<strong>${pcsTotal} pcs</strong> · ${fmtP(total)}`;
 }
 
-async function recordPcsSale(){
+async function recordSale(){
   const qty = parseInt(document.getElementById('sale-qty').value)||0;
-  if(!posSelected||qty===0) return;
-  const btn = document.getElementById('btn-record-pcs');
+  if(!posSelected || qty===0) return;
+  const btn = document.getElementById('btn-record');
   btn.disabled=true; btn.textContent='Saving…';
-  const unitPrice = prices[posSelected]?.pcs||0;
+  const pcsTotal  = getPcsTotal(posUnit, qty);
+  const unitPrice = getUnitPrice(posUnit, posSelected);
   const total     = qty * unitPrice;
   setLoading(true);
   try {
-    await sbInsert('sales',[{ date:today(), size:posSelected, unit:'pcs', qty, pcs_total:qty, unit_price:unitPrice, total }]);
-    toast(`Recorded: ${qty} pcs of ${posSelected} · ${fmtP(total)}`);
+    await sbInsert('sales',[{ date:today(), size:posSelected, unit:posUnit, qty, pcs_total:pcsTotal, unit_price:unitPrice, total }]);
+    const unitLabel = posUnit==='pcs' ? 'pcs' : posUnit==='half' ? 'half tray(s)' : 'tray(s)';
+    toast(`Recorded: ${qty} ${unitLabel} of ${posSelected} · ${fmtP(total)}`);
     document.getElementById('sale-qty').value='';
-    posSelected=null; renderPcsSizes(); updatePcsPreview();
+    updateSalesPreview();
     loadTodaySales();
   } catch(e){ toast('Save failed: '+e.message, true); }
   btn.disabled=false; btn.textContent='Record Sale';
