@@ -232,18 +232,18 @@ tfoot td:first-child{text-align:left;font-family:var(--sans);font-weight:700;}
 <div class="page" id="page-pos">
   <div class="sales-form">
 
-    <div class="section-label" style="margin-top:0">Unit</div>
+    <div class="section-label" style="margin-top:0">1. Size</div>
+    <div class="size-grid" id="pos-sizes"></div>
+
+    <div class="section-label">2. Unit</div>
     <div class="unit-toggle">
       <button class="unit-btn selected" id="unit-pcs"  onclick="selectUnit('pcs')">Pieces</button>
       <button class="unit-btn"          id="unit-half" onclick="selectUnit('half')">Half Tray (15 pcs)</button>
       <button class="unit-btn"          id="unit-tray" onclick="selectUnit('tray')">Tray (30 pcs)</button>
     </div>
 
-    <div class="section-label">Size</div>
-    <div class="size-grid" id="pos-sizes"></div>
-
+    <div class="section-label">3. Quantity</div>
     <div class="sales-qty-row">
-      <label>Quantity</label>
       <input type="number" id="sale-qty" min="1" placeholder="0" oninput="updateSalesPreview()"/>
       <span class="sales-preview" id="sales-preview"></span>
     </div>
