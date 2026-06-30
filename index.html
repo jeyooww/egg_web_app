@@ -92,6 +92,8 @@ tfoot td:first-child{text-align:left;font-family:var(--sans);font-weight:700;}
 .size-btn:hover{border-color:var(--amber-mid);}
 .size-btn.selected{border-color:var(--amber-mid);background:var(--amber-lt);color:#92400E;}
 .unit-toggle{display:flex;gap:.4rem;margin-bottom:1.25rem;}
+.size-btn .sprice,.size-btn .sprice{display:block;font:500 .7rem var(--mono);color:var(--muted);margin-top:.2rem;}
+.size-btn.selected .sprice{color:#92400E;}
 .unit-btn{flex:1;padding:.55rem;border-radius:8px;border:2px solid var(--border);background:var(--bg);font:600 .85rem var(--sans);cursor:pointer;transition:all .15s;text-align:center;}
 .unit-btn.selected{border-color:var(--amber-mid);background:var(--amber-lt);color:#92400E;}
 .sales-qty-row{display:flex;align-items:center;gap:.75rem;margin-bottom:1.25rem;}
@@ -145,8 +147,18 @@ tfoot td:first-child{text-align:left;font-family:var(--sans);font-weight:700;}
 .farm-name-wrap input{font:600 .9rem var(--sans);background:var(--bg);border:1.5px solid var(--border);border-radius:7px;padding:.4rem .65rem;color:var(--text);outline:none;width:100%;}
 .farm-name-wrap input:focus{border-color:var(--amber-mid);}
 
+/* BASKET ITEMS */
+.basket-item{display:flex;align-items:center;justify-content:space-between;padding:.45rem .6rem;background:var(--bg);border-radius:7px;margin-bottom:.35rem;font-size:.88rem;}
+.basket-item-name{font-weight:600;}
+.basket-item-detail{color:var(--muted);font-size:.78rem;}
+.basket-item-right{display:flex;align-items:center;gap:.75rem;}
+.basket-item-price{font:600 .85rem var(--mono);}
+.basket-qty-ctrl{display:flex;align-items:center;gap:.3rem;}
+.basket-qty-ctrl button{width:24px;height:24px;border-radius:5px;border:1.5px solid var(--border);background:var(--surface);font-size:.9rem;cursor:pointer;display:flex;align-items:center;justify-content:center;line-height:1;}
+.basket-qty-ctrl button:hover{border-color:var(--amber-mid);}
+.basket-qty-ctrl span{font:600 .88rem var(--mono);min-width:20px;text-align:center;}
+
 /* HISTORY VIEW TOGGLE */
-.hist-view-toggle{display:flex;gap:4px;background:var(--border);border-radius:9px;padding:3px;width:fit-content;margin-bottom:1rem;}
 .hv-btn{background:none;border:none;font:600 .83rem var(--sans);padding:.38rem 1.1rem;border-radius:7px;cursor:pointer;color:var(--muted);transition:all .15s;}
 .hv-btn.active{background:var(--surface);color:var(--text);box-shadow:0 1px 3px rgba(0,0,0,.1);}
 
@@ -224,9 +236,9 @@ tfoot td:first-child{text-align:left;font-family:var(--sans);font-weight:700;}
 
     <div class="section-label">Unit</div>
     <div class="unit-toggle">
-      <button class="unit-btn selected" id="unit-pcs" onclick="selectUnit('pcs')">Pieces</button>
-      <button class="unit-btn" id="unit-half" onclick="selectUnit('half')">Half Tray (15 pcs)</button>
-      <button class="unit-btn" id="unit-tray" onclick="selectUnit('tray')">Trays (30 pcs)</button>
+      <button class="unit-btn selected" id="unit-pcs"  onclick="selectUnit('pcs')">Pieces</button>
+      <button class="unit-btn"          id="unit-half" onclick="selectUnit('half')">Half Tray (15 pcs)</button>
+      <button class="unit-btn"          id="unit-tray" onclick="selectUnit('tray')">Trays (30 pcs)</button>
     </div>
 
     <div class="sales-qty-row">
@@ -406,7 +418,13 @@ const FARMS = [0,1,2];
 const TRAY  = 30;
 
 // ─── HELPERS (defined early so state init can use them) ───────────────────────
-function today(){ return new Date().toISOString().split('T')[0]; }
+function today(){
+  const d = new Date();
+  const y = d.getFullYear();
+  const m = String(d.getMonth()+1).padStart(2,'0');
+  const dd = String(d.getDate()).padStart(2,'0');
+  return `${y}-${m}-${dd}`;
+}
 function fmtDate(d){ if(!d)return''; const[y,m,dd]=d.split('-'); return`${dd}/${m}/${y}`; }
 function fmtP(n){ return '₱'+Number(n).toFixed(2); }
 function monthKey(d){ return d?d.slice(0,7):''; }
@@ -421,6 +439,12 @@ let invDate   = today();
 // POS
 let posSelected = null;
 let posUnit     = 'pcs';
+
+function getPcsTotal(unit, qty){ return unit==='pcs' ? qty : unit==='half' ? qty*15 : qty*30; }
+function getUnitPrice(unit, size){
+  const p = prices[size]||{};
+  return unit==='pcs' ? (p.pcs||0) : unit==='half' ? (p.half||0) : (p.tray||0);
+}
 
 // Loading bar
 function setLoading(on){
@@ -591,41 +615,41 @@ async function renderInvHistory(){
 }
 
 // ─── SALES ───────────────────────────────────────────────────────────────────
+let basket = {}; // unused, kept to avoid reference errors
 
 function renderPOS(){
-  document.getElementById('pos-sizes').innerHTML = SIZES.map(s=>
-    `<button class="size-btn ${posSelected===s?'selected':''}" onclick="selectSize('${s}')">${s}</button>`
-  ).join('');
+  renderSizeBtns();
   updateSalesPreview();
   loadTodaySales();
 }
 
+function renderSizeBtns(){
+  document.getElementById('pos-sizes').innerHTML = SIZES.map(s=>
+    `<button class="size-btn ${posSelected===s?'selected':''}" onclick="selectSize('${s}')">${s}</button>`
+  ).join('');
+}
+
 function selectSize(s){
   posSelected = s;
-  document.querySelectorAll('.size-btn').forEach(b=>b.classList.toggle('selected', b.textContent===s));
+  renderSizeBtns();
   updateSalesPreview();
 }
 
 function selectUnit(u){
   posUnit = u;
-  document.getElementById('unit-pcs').classList.toggle('selected', u==='pcs');
-  document.getElementById('unit-half').classList.toggle('selected', u==='half');
-  document.getElementById('unit-tray').classList.toggle('selected', u==='tray');
+  ['pcs','half','tray'].forEach(x=>
+    document.getElementById('unit-'+x).classList.toggle('selected', x===u));
+  posSelected = null;
+  renderSizeBtns();
   updateSalesPreview();
 }
 
-function getPcsTotal(unit, qty){ return unit==='pcs' ? qty : unit==='half' ? qty*15 : qty*30; }
-function getUnitPrice(unit, size){
-  const p = prices[size]||{};
-  return unit==='pcs' ? (p.pcs||0) : unit==='half' ? (p.half||0) : (p.tray||0);
-}
-
 function updateSalesPreview(){
-  const qty = parseInt(document.getElementById('sale-qty')?.value)||0;
+  const qty     = parseInt(document.getElementById('sale-qty')?.value)||0;
   const preview = document.getElementById('sales-preview');
-  const btn = document.getElementById('btn-record');
-  const ok = posSelected && qty > 0;
-  btn.disabled = !ok;
+  const btn     = document.getElementById('btn-record');
+  const ok      = posSelected && qty > 0;
+  btn.disabled  = !ok;
   if(!ok){ preview.innerHTML=''; return; }
   const pcsTotal  = getPcsTotal(posUnit, qty);
   const unitPrice = getUnitPrice(posUnit, posSelected);
@@ -647,7 +671,7 @@ async function recordSale(){
     const unitLabel = posUnit==='pcs' ? 'pcs' : posUnit==='half' ? 'half tray(s)' : 'tray(s)';
     toast(`Recorded: ${qty} ${unitLabel} of ${posSelected} · ${fmtP(total)}`);
     document.getElementById('sale-qty').value='';
-    updateSalesPreview();
+    posSelected=null; renderSizeBtns(); updateSalesPreview();
     loadTodaySales();
   } catch(e){ toast('Save failed: '+e.message, true); }
   btn.disabled=false; btn.textContent='Record Sale';
