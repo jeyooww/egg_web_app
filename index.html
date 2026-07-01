@@ -248,7 +248,7 @@ tfoot td:first-child{text-align:left;font-family:var(--sans);font-weight:700;}
     </div>
 
     <div style="margin-bottom:1.25rem">
-      <label style="display:block;font-size:.8rem;font-weight:500;color:var(--muted);margin-bottom:.35rem">Custom Price <span style="font-weight:400">(optional — overrides total)</span></label>
+      <label style="display:block;font-size:.8rem;font-weight:500;color:var(--muted);margin-bottom:.35rem">Custom Price per Unit <span style="font-weight:400">(optional — overrides standard price)</span></label>
       <input type="number" id="sale-custom-price" min="0" step="0.01" placeholder="₱ leave blank for standard" style="width:100%;font:400 .9rem var(--sans);background:var(--bg);border:1.5px solid var(--border);border-radius:8px;padding:.5rem .75rem;color:var(--text);outline:none;" oninput="updateSalesPreview()"/>
     </div>
 
@@ -648,18 +648,19 @@ function selectUnit(u){
 }
 
 function updateSalesPreview(){
-  const qty     = parseInt(document.getElementById('sale-qty')?.value)||0;
-  const custom  = document.getElementById('sale-custom-price')?.value;
-  const preview = document.getElementById('sales-preview');
-  const btn     = document.getElementById('btn-record');
-  const ok      = posSelected && qty > 0;
-  btn.disabled  = !ok;
+  const qty        = parseInt(document.getElementById('sale-qty')?.value)||0;
+  const custom     = document.getElementById('sale-custom-price')?.value;
+  const preview    = document.getElementById('sales-preview');
+  const btn        = document.getElementById('btn-record');
+  const ok         = posSelected && qty > 0;
+  btn.disabled     = !ok;
   if(!ok){ preview.innerHTML=''; return; }
-  const pcsTotal    = getPcsTotal(posUnit, qty);
-  const stdTotal    = qty * getUnitPrice(posUnit, posSelected);
-  const finalTotal  = custom !== '' && !isNaN(parseFloat(custom)) ? parseFloat(custom) : stdTotal;
-  const isCustom    = custom !== '' && !isNaN(parseFloat(custom));
-  preview.innerHTML = `<strong>${pcsTotal} pcs</strong> · ${fmtP(finalTotal)}${isCustom ? ' <span style="color:var(--amber);font-size:.75rem">(custom)</span>' : ''}`;
+  const pcsTotal   = getPcsTotal(posUnit, qty);
+  const stdPrice   = getUnitPrice(posUnit, posSelected);
+  const unitPrice  = custom !== '' && !isNaN(parseFloat(custom)) ? parseFloat(custom) : stdPrice;
+  const total      = qty * unitPrice;
+  const isCustom   = custom !== '' && !isNaN(parseFloat(custom));
+  preview.innerHTML = `<strong>${pcsTotal} pcs</strong> · ${fmtP(unitPrice)}/unit = ${fmtP(total)}${isCustom ? ' <span style="color:var(--amber);font-size:.75rem">(custom)</span>' : ''}`;
 }
 
 async function recordSale(){
@@ -668,15 +669,15 @@ async function recordSale(){
   if(!posSelected || qty===0) return;
   const btn = document.getElementById('btn-record');
   btn.disabled=true; btn.textContent='Saving…';
-  const pcsTotal   = getPcsTotal(posUnit, qty);
-  const unitPrice  = getUnitPrice(posUnit, posSelected);
-  const stdTotal   = qty * unitPrice;
-  const finalTotal = custom !== '' && !isNaN(parseFloat(custom)) ? parseFloat(custom) : stdTotal;
+  const pcsTotal  = getPcsTotal(posUnit, qty);
+  const stdPrice  = getUnitPrice(posUnit, posSelected);
+  const unitPrice = custom !== '' && !isNaN(parseFloat(custom)) ? parseFloat(custom) : stdPrice;
+  const total     = qty * unitPrice;
   setLoading(true);
   try {
-    await sbInsert('sales',[{ date:today(), size:posSelected, unit:posUnit, qty, pcs_total:pcsTotal, unit_price:unitPrice, total:finalTotal }]);
+    await sbInsert('sales',[{ date:today(), size:posSelected, unit:posUnit, qty, pcs_total:pcsTotal, unit_price:unitPrice, total }]);
     const unitLabel = posUnit==='pcs' ? 'pcs' : posUnit==='half' ? 'half tray(s)' : 'tray(s)';
-    toast(`Recorded: ${qty} ${unitLabel} of ${posSelected} · ${fmtP(finalTotal)}`);
+    toast(`Recorded: ${qty} ${unitLabel} of ${posSelected} · ${fmtP(total)}`);
     document.getElementById('sale-qty').value='';
     document.getElementById('sale-custom-price').value='';
     posSelected=null; renderSizeBtns(); updateSalesPreview();
