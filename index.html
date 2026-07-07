@@ -196,6 +196,7 @@ tfoot td:first-child{text-align:left;font-family:var(--sans);font-weight:700;}
   <nav>
     <button class="nav-btn active" onclick="showPage('inventory',this)">Inventory</button>
     <button class="nav-btn" onclick="showPage('pos',this)">Sales POS</button>
+    <button class="nav-btn" onclick="showPage('tally',this)">Tally</button>
     <button class="nav-btn" onclick="showPage('history',this)">History</button>
     <button class="nav-btn" onclick="showPage('settings',this)">Settings</button>
   </nav>
@@ -266,6 +267,23 @@ tfoot td:first-child{text-align:left;font-family:var(--sans);font-weight:700;}
         <tfoot id="today-sales-foot"></tfoot>
       </table>
     </div>
+  </div>
+</div>
+
+<!-- TALLY -->
+<div class="page" id="page-tally">
+  <div class="save-row">
+    <div class="total-preview"><span>Total available eggs:</span><span id="tally-total-preview">0</span></div>
+    <div style="display:flex;gap:.5rem;flex-wrap:wrap;">
+      <button class="btn-outline" onclick="loadTally()">Refresh</button>
+      <button class="btn-primary" onclick="copyTally()">📋 Copy Tally</button>
+    </div>
+  </div>
+  <div class="section-label">Available Eggs — Combined (All Farms)</div>
+  <div class="egg-grid" id="tally-egg-grid"></div>
+  <div class="save-row">
+    <div style="font-size:.8rem;color:var(--muted);max-width:420px;">Trays &amp; Pieces above reflect collections minus sales. Edit any values to correct discrepancies, then save.</div>
+    <button class="btn-primary" id="btn-save-tally" onclick="saveTallyAdjustments()">Save Adjustments</button>
   </div>
 </div>
 
@@ -490,6 +508,7 @@ function showPage(name, btn){
   if(btn) btn.classList.add('active');
   if(name==='inventory') renderInventoryPage();
   if(name==='pos')       renderPOS();
+  if(name==='tally')     loadTally();
   if(name==='history')   { renderHistoryFilters(); renderHistory(); }
   if(name==='settings')  renderSettings();
 }
@@ -715,6 +734,113 @@ async function loadTodaySales(){
     const totalRev = rows.reduce((s,r)=>s+parseFloat(r.total),0);
     foot.innerHTML=`<tr><td>Total</td><td></td><td></td><td>${totalPcs}</td><td>${fmtP(totalRev)}</td><td></td></tr>`;
   } catch(e){ toast('Could not load today\'s sales',true); }
+}
+
+// ─── TALLY ───────────────────────────────────────────────────────────────────
+// tallyBaseline[size] = (total pieces collected across all farms) - (total pieces sold), in pcs
+// tallyAdjustments[size] = manual correction offset (in pcs), persisted in settings table
+let tallyBaseline    = {};
+let tallyAdjustments = {};
+
+async function loadTallySettings(){
+  try {
+    const rows = await sbGet('settings', `key=eq.tallyAdjustments&select=value`);
+    tallyAdjustments = (rows[0] && rows[0].value) || {};
+  } catch(e){ tallyAdjustments = {}; }
+}
+
+async function computeTallyBaseline(){
+  const [invRows, saleRows] = await Promise.all([
+    sbGet('inventory', 'select=size,trays,pcs'),
+    sbGet('sales',     'select=size,pcs_total')
+  ]);
+  const collected = Object.fromEntries(SIZES.map(s=>[s,0]));
+  invRows.forEach(r=>{ collected[r.size] = (collected[r.size]||0) + r.trays*TRAY + r.pcs; });
+  const sold = Object.fromEntries(SIZES.map(s=>[s,0]));
+  saleRows.forEach(r=>{ sold[r.size] = (sold[r.size]||0) + r.pcs_total; });
+  const baseline = {};
+  SIZES.forEach(s=>{ baseline[s] = (collected[s]||0) - (sold[s]||0); });
+  return baseline;
+}
+
+function renderTallyGrid(){
+  document.getElementById('tally-egg-grid').innerHTML = SIZES.map(size=>{
+    const total = (tallyBaseline[size]||0) + (tallyAdjustments[size]||0);
+    const trays = Math.trunc(total/TRAY);
+    const pcs   = total - trays*TRAY;
+    return `<div class="egg-card">
+      <div class="egg-card-top">
+        <span class="egg-size-label">${size}</span>
+      </div>
+      <div class="egg-inputs">
+        <div class="egg-input-wrap">
+          <label>Trays</label>
+          <input type="number" id="tly-${size}-trays" value="${trays}" oninput="updateTallyTotal()"/>
+        </div>
+        <div class="egg-input-wrap">
+          <label>Pieces</label>
+          <input type="number" id="tly-${size}-pcs" value="${pcs}" oninput="updateTallyTotal()"/>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+  updateTallyTotal();
+}
+
+function updateTallyTotal(){
+  let t=0;
+  SIZES.forEach(size=>{
+    const tr=parseInt(document.getElementById(`tly-${size}-trays`)?.value||0)||0;
+    const pc=parseInt(document.getElementById(`tly-${size}-pcs`)?.value||0)||0;
+    t+=tr*TRAY+pc;
+  });
+  document.getElementById('tally-total-preview').textContent=t.toLocaleString();
+}
+
+async function loadTally(){
+  setLoading(true);
+  try {
+    await loadTallySettings();
+    tallyBaseline = await computeTallyBaseline();
+    renderTallyGrid();
+  } catch(e){ toast('Failed to load tally.',true); }
+  setLoading(false);
+}
+
+async function saveTallyAdjustments(){
+  const btn = document.getElementById('btn-save-tally');
+  btn.disabled=true; btn.textContent='Saving…';
+  setLoading(true);
+  try {
+    SIZES.forEach(size=>{
+      const tr=parseInt(document.getElementById(`tly-${size}-trays`)?.value||0)||0;
+      const pc=parseInt(document.getElementById(`tly-${size}-pcs`)?.value||0)||0;
+      const target = tr*TRAY+pc;
+      tallyAdjustments[size] = target - (tallyBaseline[size]||0);
+    });
+    await sbUpsert('settings',[{key:'tallyAdjustments', value:tallyAdjustments}]);
+    toast('Tally adjustments saved');
+  } catch(e){ toast('Save failed: '+e.message,true); }
+  btn.disabled=false; btn.textContent='Save Adjustments';
+  setLoading(false);
+}
+
+function copyTally(){
+  const now = new Date();
+  const dateStr = now.toLocaleDateString('en-PH',{year:'numeric',month:'long',day:'numeric'});
+  const timeStr = now.toLocaleTimeString('en-PH',{hour:'2-digit',minute:'2-digit'});
+  const lines = [`J & V Egg Farm Tally as of ${dateStr} ${timeStr}`];
+  SIZES.forEach(size=>{
+    const tr=parseInt(document.getElementById(`tly-${size}-trays`)?.value||0)||0;
+    const pc=parseInt(document.getElementById(`tly-${size}-pcs`)?.value||0)||0;
+    lines.push(`${size}: ${tr} trays + ${pc} pcs`);
+  });
+  const text = lines.join('\n');
+  navigator.clipboard.writeText(text).then(()=>{
+    toast('Tally copied to clipboard!');
+  }).catch(()=>{
+    toast('Failed to copy — clipboard unavailable.',true);
+  });
 }
 
 // ─── SALE EDIT / DELETE ───────────────────────────────────────────────────────
