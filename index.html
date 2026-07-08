@@ -17,13 +17,19 @@
 body{font-family:var(--sans);background:var(--bg);color:var(--text);min-height:100vh;font-size:15px;}
 
 /* HEADER */
-header{background:var(--header);color:#fff;padding:0 1.5rem;display:flex;align-items:center;justify-content:space-between;height:52px;position:sticky;top:0;z-index:200;}
-.logo{display:flex;align-items:center;gap:.5rem;font-weight:700;font-size:.95rem;}
+header{background:var(--header);color:#fff;padding:0 1.5rem;display:flex;align-items:center;justify-content:space-between;height:52px;position:sticky;top:0;z-index:200;gap:1rem;}
+.logo{display:flex;align-items:center;gap:.5rem;font-weight:700;font-size:.95rem;flex-shrink:0;}
 .logo span{opacity:.5;font-weight:400}
-nav{display:flex;gap:2px;}
-.nav-btn{background:none;border:none;color:rgba(255,255,255,.5);font:500 .82rem var(--sans);padding:.38rem .85rem;border-radius:6px;cursor:pointer;transition:all .15s;}
+nav{display:flex;gap:2px;overflow-x:auto;scrollbar-width:none;-ms-overflow-style:none;-webkit-overflow-scrolling:touch;}
+nav::-webkit-scrollbar{display:none;}
+.nav-btn{background:none;border:none;color:rgba(255,255,255,.5);font:500 .82rem var(--sans);padding:.38rem .85rem;border-radius:6px;cursor:pointer;transition:all .15s;white-space:nowrap;flex-shrink:0;}
 .nav-btn.active{background:rgba(255,255,255,.13);color:#fff;}
 .nav-btn:hover:not(.active){color:rgba(255,255,255,.8);}
+@media(max-width:640px){
+  header{padding:0 1rem;}
+  .logo span{display:none;}
+  nav{justify-content:flex-start;}
+}
 
 /* LAYOUT */
 main{max-width:1040px;margin:0 auto;padding:1.5rem 1.25rem 4rem;}
@@ -131,21 +137,6 @@ tfoot td:first-child{text-align:left;font-family:var(--sans);font-weight:700;}
 .toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
 .toast.error{background:var(--red);}
 
-/* TALLY CARDS */
-.tally-size-card{background:var(--surface);border:1.5px solid var(--border);border-radius:var(--radius);padding:1rem 1.1rem;}
-.tally-size-name{font-weight:700;font-size:.95rem;margin-bottom:.5rem;}
-.tally-size-main{font:700 2rem var(--mono);line-height:1;margin-bottom:.15rem;}
-.tally-size-sub{font-size:.75rem;color:var(--muted);}
-.tally-size-card.low{border-color:#FCA5A5;background:#FFF5F5;}
-.tally-size-card.low .tally-size-main{color:var(--red);}
-
-/* TALLY ADJUST TABLE */
-#tally-adjust-body td{text-align:center;vertical-align:middle;}
-#tally-adjust-body td:first-child{text-align:left;font-family:var(--sans);font-weight:600;}
-#tally-adjust-body td:last-child{text-align:right;}
-#tally-adjust-body input{font:600 .9rem var(--mono);background:var(--bg);border:1.5px solid var(--border);border-radius:7px;padding:.35rem .5rem;width:75px;text-align:center;outline:none;}
-#tally-adjust-body input:focus{border-color:var(--amber-mid);}
-
 /* SETTINGS */
 .settings-section{margin-bottom:2rem;}
 .settings-title{font-weight:700;font-size:1rem;margin-bottom:1rem;}
@@ -189,26 +180,6 @@ tfoot td:first-child{text-align:left;font-family:var(--sans);font-weight:700;}
 .badge{display:inline-block;font-size:.7rem;font-weight:700;padding:.18rem .5rem;border-radius:99px;}
 .badge-inv{background:#EDE9FE;color:#5B21B6;}
 .badge-sale{background:var(--amber-lt);color:#92400E;}
-
-/* TALLY */
-.tally-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:.75rem;margin-bottom:1.5rem;}
-.tally-card{background:var(--surface);border:1.5px solid var(--border);border-radius:var(--radius);padding:1rem 1.1rem;}
-.tally-card-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:.75rem;}
-.tally-size-name{font-weight:700;font-size:1rem;}
-.tally-total{font:700 1.4rem var(--mono);color:var(--amber);}
-.tally-total-sub{font-size:.72rem;color:var(--muted);margin-top:.1rem;}
-.tally-breakdown{display:grid;grid-template-columns:1fr 1fr;gap:.5rem;margin-bottom:.75rem;}
-.tally-stat{background:var(--bg);border-radius:7px;padding:.45rem .65rem;}
-.tally-stat-label{font-size:.68rem;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;}
-.tally-stat-val{font:600 1rem var(--mono);margin-top:.1rem;}
-.tally-adj{display:grid;grid-template-columns:1fr 1fr;gap:.4rem;}
-.tally-adj input{font:600 .88rem var(--mono);background:var(--bg);border:1.5px solid var(--border);border-radius:7px;padding:.35rem .5rem;color:var(--text);outline:none;width:100%;text-align:center;}
-.tally-adj input:focus{border-color:var(--amber-mid);}
-.tally-adj label{font-size:.68rem;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;display:block;margin-bottom:.2rem;}
-.tally-actions{display:flex;gap:.5rem;align-items:center;flex-wrap:wrap;margin-bottom:1.5rem;}
-.btn-copy{background:var(--header);color:#fff;border:none;font:600 .88rem var(--sans);border-radius:8px;padding:.6rem 1.25rem;cursor:pointer;transition:background .12s;display:flex;align-items:center;gap:.4rem;}
-.btn-copy:hover{background:#333;}
-.tally-timestamp{font-size:.8rem;color:var(--muted);}
 
 /* MISC */
 .empty{text-align:center;padding:2.5rem 1rem;color:var(--muted);font-size:.88rem;}
@@ -305,6 +276,23 @@ tfoot td:first-child{text-align:left;font-family:var(--sans);font-weight:700;}
   </div>
 </div>
 
+<!-- TALLY -->
+<div class="page" id="page-tally">
+  <div class="save-row">
+    <div class="total-preview"><span>Total available eggs:</span><span id="tally-total-preview">0</span></div>
+    <div style="display:flex;gap:.5rem;flex-wrap:wrap;">
+      <button class="btn-outline" onclick="loadTally()">Refresh</button>
+      <button class="btn-primary" onclick="copyTally()">📋 Copy Tally</button>
+    </div>
+  </div>
+  <div class="section-label">Available Eggs — Combined (All Farms)</div>
+  <div class="egg-grid" id="tally-egg-grid"></div>
+  <div class="save-row">
+    <div style="font-size:.8rem;color:var(--muted);max-width:420px;">Trays &amp; Pieces above reflect collections minus sales. Edit any values to correct discrepancies, then save.</div>
+    <button class="btn-primary" id="btn-save-tally" onclick="saveTallyAdjustments()">Save Adjustments</button>
+  </div>
+</div>
+
 <!-- HISTORY -->
 <div class="page" id="page-history">
   <div class="hist-view-toggle">
@@ -353,53 +341,6 @@ tfoot td:first-child{text-align:left;font-family:var(--sans);font-weight:700;}
       </table>
     </div>
   </div>
-</div>
-
-<!-- TALLY -->
-<div class="page" id="page-tally">
-  <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:.75rem;margin-bottom:1.25rem">
-    <div>
-      <div style="font-weight:700;font-size:1rem">Live Stock Tally</div>
-      <div style="font-size:.8rem;color:var(--muted);margin-top:.2rem">Combined across all farms · updates from collections &amp; sales</div>
-    </div>
-    <div style="display:flex;gap:.5rem;flex-wrap:wrap">
-      <button class="btn-outline" onclick="recalcTally()">↻ Recalculate</button>
-      <button class="btn-primary" onclick="copyTally()" id="btn-copy-tally">📋 Copy Tally</button>
-    </div>
-  </div>
-
-  <!-- TALLY CARDS -->
-  <div class="egg-grid" id="tally-grid"></div>
-
-  <!-- MANUAL ADJUST -->
-  <div class="section-label" style="margin-top:1.5rem">Manual Adjustment</div>
-  <p style="font-size:.82rem;color:var(--muted);margin-bottom:.85rem">Fine-tune the count per size if there are discrepancies. Enter the corrected number of trays and pieces directly.</p>
-  <div class="card">
-    <div class="table-wrap">
-      <table>
-        <thead><tr>
-          <th>Size</th>
-          <th style="text-align:center">Trays</th>
-          <th style="text-align:center">Pieces</th>
-          <th style="text-align:right">Total pcs</th>
-        </tr></thead>
-        <tbody id="tally-adjust-body"></tbody>
-      </table>
-    </div>
-    <div style="display:flex;justify-content:flex-end;margin-top:1rem">
-      <button class="btn-primary" onclick="saveTallyAdjust()">Save Adjustments</button>
-    </div>
-  </div>
-</div>
-
-<!-- TALLY -->
-<div class="page" id="page-tally">
-  <div class="tally-actions">
-    <button class="btn-copy" onclick="copyTally()">📋 Copy Tally to Clipboard</button>
-    <button class="btn-primary" onclick="saveAdjustments()">Save Adjustments</button>
-    <span class="tally-timestamp" id="tally-timestamp"></span>
-  </div>
-  <div class="tally-grid" id="tally-grid"></div>
 </div>
 
 <!-- SETTINGS -->
@@ -573,7 +514,7 @@ function showPage(name, btn){
   if(btn) btn.classList.add('active');
   if(name==='inventory') renderInventoryPage();
   if(name==='pos')       renderPOS();
-  if(name==='tally')     renderTally();
+  if(name==='tally')     loadTally();
   if(name==='history')   { renderHistoryFilters(); renderHistory(); }
   if(name==='settings')  renderSettings();
 }
@@ -648,12 +589,6 @@ async function saveInventoryDay(){
       pcs:   parseInt(document.getElementById(`inp-${size}-pcs`)?.value||0)||0,
     }));
     await sbUpsert('inventory', rows);
-    // update tally
-    const sizeData = Object.fromEntries(SIZES.map(size=>([size,{
-      trays: parseInt(document.getElementById(`inp-${size}-trays`)?.value)||0,
-      pcs:   parseInt(document.getElementById(`inp-${size}-pcs`)?.value)||0,
-    }])));
-    await updateTallyAfterCollection(sizeData);
     toast('Saved for '+farmNames[invFarm]+' on '+fmtDate(invDate));
     await renderInvHistory();
   } catch(e){ toast('Save failed: '+e.message, true); }
@@ -766,7 +701,6 @@ async function recordSale(){
   setLoading(true);
   try {
     await sbInsert('sales',[{ date:today(), size:posSelected, unit:posUnit, qty, pcs_total:pcsTotal, unit_price:unitPrice, total }]);
-    await updateTallyAfterSale(posSelected, pcsTotal);
     const unitLabel = posUnit==='pcs' ? 'pcs' : posUnit==='half' ? 'half tray(s)' : 'tray(s)';
     toast(`Recorded: ${qty} ${unitLabel} of ${posSelected} · ${fmtP(total)}`);
     document.getElementById('sale-qty').value='';
@@ -806,6 +740,113 @@ async function loadTodaySales(){
     const totalRev = rows.reduce((s,r)=>s+parseFloat(r.total),0);
     foot.innerHTML=`<tr><td>Total</td><td></td><td></td><td>${totalPcs}</td><td>${fmtP(totalRev)}</td><td></td></tr>`;
   } catch(e){ toast('Could not load today\'s sales',true); }
+}
+
+// ─── TALLY ───────────────────────────────────────────────────────────────────
+// tallyBaseline[size] = (total pieces collected across all farms) - (total pieces sold), in pcs
+// tallyAdjustments[size] = manual correction offset (in pcs), persisted in settings table
+let tallyBaseline    = {};
+let tallyAdjustments = {};
+
+async function loadTallySettings(){
+  try {
+    const rows = await sbGet('settings', `key=eq.tallyAdjustments&select=value`);
+    tallyAdjustments = (rows[0] && rows[0].value) || {};
+  } catch(e){ tallyAdjustments = {}; }
+}
+
+async function computeTallyBaseline(){
+  const [invRows, saleRows] = await Promise.all([
+    sbGet('inventory', 'select=size,trays,pcs'),
+    sbGet('sales',     'select=size,pcs_total')
+  ]);
+  const collected = Object.fromEntries(SIZES.map(s=>[s,0]));
+  invRows.forEach(r=>{ collected[r.size] = (collected[r.size]||0) + r.trays*TRAY + r.pcs; });
+  const sold = Object.fromEntries(SIZES.map(s=>[s,0]));
+  saleRows.forEach(r=>{ sold[r.size] = (sold[r.size]||0) + r.pcs_total; });
+  const baseline = {};
+  SIZES.forEach(s=>{ baseline[s] = (collected[s]||0) - (sold[s]||0); });
+  return baseline;
+}
+
+function renderTallyGrid(){
+  document.getElementById('tally-egg-grid').innerHTML = SIZES.map(size=>{
+    const total = (tallyBaseline[size]||0) + (tallyAdjustments[size]||0);
+    const trays = Math.trunc(total/TRAY);
+    const pcs   = total - trays*TRAY;
+    return `<div class="egg-card">
+      <div class="egg-card-top">
+        <span class="egg-size-label">${size}</span>
+      </div>
+      <div class="egg-inputs">
+        <div class="egg-input-wrap">
+          <label>Trays</label>
+          <input type="number" id="tly-${size}-trays" value="${trays}" oninput="updateTallyTotal()"/>
+        </div>
+        <div class="egg-input-wrap">
+          <label>Pieces</label>
+          <input type="number" id="tly-${size}-pcs" value="${pcs}" oninput="updateTallyTotal()"/>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+  updateTallyTotal();
+}
+
+function updateTallyTotal(){
+  let t=0;
+  SIZES.forEach(size=>{
+    const tr=parseInt(document.getElementById(`tly-${size}-trays`)?.value||0)||0;
+    const pc=parseInt(document.getElementById(`tly-${size}-pcs`)?.value||0)||0;
+    t+=tr*TRAY+pc;
+  });
+  document.getElementById('tally-total-preview').textContent=t.toLocaleString();
+}
+
+async function loadTally(){
+  setLoading(true);
+  try {
+    await loadTallySettings();
+    tallyBaseline = await computeTallyBaseline();
+    renderTallyGrid();
+  } catch(e){ toast('Failed to load tally.',true); }
+  setLoading(false);
+}
+
+async function saveTallyAdjustments(){
+  const btn = document.getElementById('btn-save-tally');
+  btn.disabled=true; btn.textContent='Saving…';
+  setLoading(true);
+  try {
+    SIZES.forEach(size=>{
+      const tr=parseInt(document.getElementById(`tly-${size}-trays`)?.value||0)||0;
+      const pc=parseInt(document.getElementById(`tly-${size}-pcs`)?.value||0)||0;
+      const target = tr*TRAY+pc;
+      tallyAdjustments[size] = target - (tallyBaseline[size]||0);
+    });
+    await sbUpsert('settings',[{key:'tallyAdjustments', value:tallyAdjustments}]);
+    toast('Tally adjustments saved');
+  } catch(e){ toast('Save failed: '+e.message,true); }
+  btn.disabled=false; btn.textContent='Save Adjustments';
+  setLoading(false);
+}
+
+function copyTally(){
+  const now = new Date();
+  const dateStr = now.toLocaleDateString('en-PH',{year:'numeric',month:'long',day:'numeric'});
+  const timeStr = now.toLocaleTimeString('en-PH',{hour:'2-digit',minute:'2-digit'});
+  const lines = [`J & V Egg Farm Tally as of ${dateStr} ${timeStr}`];
+  SIZES.forEach(size=>{
+    const tr=parseInt(document.getElementById(`tly-${size}-trays`)?.value||0)||0;
+    const pc=parseInt(document.getElementById(`tly-${size}-pcs`)?.value||0)||0;
+    lines.push(`${size}: ${tr} trays + ${pc} pcs`);
+  });
+  const text = lines.join('\n');
+  navigator.clipboard.writeText(text).then(()=>{
+    toast('Tally copied to clipboard!');
+  }).catch(()=>{
+    toast('Failed to copy — clipboard unavailable.',true);
+  });
 }
 
 // ─── SALE EDIT / DELETE ───────────────────────────────────────────────────────
@@ -905,111 +946,6 @@ function closeModal(id){ document.getElementById(id).classList.add('hidden'); }
 document.addEventListener('click', e=>{
   if(e.target.classList.contains('modal-overlay')) e.target.classList.add('hidden');
 });
-// ─── TALLY ───────────────────────────────────────────────────────────────────
-// tally adjustments stored in supabase: table 'tally_adjustments' key=size, trays, pcs
-// We compute: collections - sales + adjustments per size
-
-async function renderTally(){
-  setLoading(true);
-  try {
-    // fetch all inventory (all farms, all dates)
-    const invRows  = await sbGet('inventory', 'select=size,trays,pcs');
-    const saleRows = await sbGet('sales',     'select=size,pcs_total');
-    const adjRows  = await sbGet('tally_adjustments', 'select=size,trays,pcs');
-
-    // total collected per size (pieces)
-    const collected = Object.fromEntries(SIZES.map(s=>[s,0]));
-    invRows.forEach(r=>{ collected[r.size] = (collected[r.size]||0) + r.trays*TRAY + r.pcs; });
-
-    // total sold per size (pieces)
-    const sold = Object.fromEntries(SIZES.map(s=>[s,0]));
-    saleRows.forEach(r=>{ sold[r.size] = (sold[r.size]||0) + r.pcs_total; });
-
-    // manual adjustments per size (stored as trays+pcs override)
-    const adj = Object.fromEntries(adjRows.map(r=>[r.size,{trays:r.trays,pcs:r.pcs}]));
-
-    // render cards
-    document.getElementById('tally-grid').innerHTML = SIZES.map(size=>{
-      const netPcs   = collected[size] - sold[size];
-      const a        = adj[size]||{trays:0,pcs:0};
-      // if adjustment exists, use it; otherwise derive from net
-      const dispTrays = a.trays !== undefined && adjRows.find(r=>r.size===size) ? a.trays : Math.floor(netPcs/TRAY);
-      const dispPcs   = a.pcs   !== undefined && adjRows.find(r=>r.size===size) ? a.pcs   : netPcs % TRAY;
-      const totalPcs  = dispTrays*TRAY + dispPcs;
-      return `<div class="tally-card">
-        <div class="tally-card-top">
-          <span class="tally-size-name">${size}</span>
-          <div style="text-align:right">
-            <div class="tally-total">${dispTrays}T + ${dispPcs}pc</div>
-            <div class="tally-total-sub">${totalPcs} pcs total</div>
-          </div>
-        </div>
-        <div class="tally-breakdown">
-          <div class="tally-stat"><div class="tally-stat-label">Collected</div><div class="tally-stat-val">${collected[size]}</div></div>
-          <div class="tally-stat"><div class="tally-stat-label">Sold</div><div class="tally-stat-val">${sold[size]}</div></div>
-        </div>
-        <div class="tally-adj">
-          <div>
-            <label>Adjust Trays</label>
-            <input type="number" min="0" id="tadj-${size}-trays" value="${dispTrays}" placeholder="0"/>
-          </div>
-          <div>
-            <label>Adjust Pcs</label>
-            <input type="number" min="0" id="tadj-${size}-pcs" value="${dispPcs}" placeholder="0"/>
-          </div>
-        </div>
-      </div>`;
-    }).join('');
-
-    // timestamp
-    const now = new Date();
-    document.getElementById('tally-timestamp').textContent =
-      'Last loaded: ' + now.toLocaleTimeString('en-PH',{hour:'2-digit',minute:'2-digit'});
-
-  } catch(e){ toast('Failed to load tally: '+e.message, true); }
-  setLoading(false);
-}
-
-async function saveAdjustments(){
-  setLoading(true);
-  try {
-    const rows = SIZES.map(size=>({
-      size,
-      trays: parseInt(document.getElementById(`tadj-${size}-trays`)?.value)||0,
-      pcs:   parseInt(document.getElementById(`tadj-${size}-pcs`)?.value)||0,
-    }));
-    const h = {
-      'Content-Type': 'application/json',
-      'apikey': SUPABASE_KEY,
-      'Authorization': 'Bearer ' + SUPABASE_KEY,
-      'Prefer': 'resolution=merge-duplicates'
-    };
-    const r = await fetch(`${SUPABASE_URL}/rest/v1/tally_adjustments?on_conflict=size`, {method:'POST', headers:h, body:JSON.stringify(rows)});
-    if(!r.ok) throw new Error(await r.text());
-    toast('Adjustments saved!');
-    renderTally();
-  } catch(e){ toast('Save failed: '+e.message, true); }
-  setLoading(false);
-}
-
-async function copyTally(){
-  // read current input values (may have been manually changed)
-  const now  = new Date();
-  const date = now.toLocaleDateString('en-PH',{year:'numeric',month:'long',day:'numeric'});
-  const time = now.toLocaleTimeString('en-PH',{hour:'2-digit',minute:'2-digit'});
-  const lines = SIZES.map(size=>{
-    const trays = parseInt(document.getElementById(`tadj-${size}-trays`)?.value)||0;
-    const pcs   = parseInt(document.getElementById(`tadj-${size}-pcs`)?.value)||0;
-    if(trays===0 && pcs===0) return null;
-    return `${size}: ${trays} tray${trays!==1?'s':''} + ${pcs} pc${pcs!==1?'s':''}`;
-  }).filter(Boolean);
-  const text = `J & V Egg Farm Tally as of ${date} ${time}\n\n${lines.join('\n')}`;
-  try {
-    await navigator.clipboard.writeText(text);
-    toast('Tally copied to clipboard! 📋');
-  } catch(e){ toast('Copy failed — try again',true); }
-}
-
 // ─── HISTORY ─────────────────────────────────────────────────────────────────
 let histView = 'month';
 
@@ -1161,156 +1097,6 @@ async function saveSettings(){
     renderInventoryPage();
   } catch(e){ toast('Save failed: '+e.message,true); }
   setLoading(false);
-}
-
-// ─── TALLY ───────────────────────────────────────────────────────────────────
-// Stock is stored in Supabase as tally_stock: [{ size, pcs }]
-// Recalc = sum all inventory collections - sum all sales, per size
-
-let tallyStock = {}; // { size: totalPcs }
-
-async function renderTally(){
-  setLoading(true);
-  try {
-    // Load persisted tally from settings
-    const rows = await sbGet('settings', `key=eq.tally_stock`);
-    if(rows.length > 0){
-      tallyStock = rows[0].value;
-    } else {
-      // First time — recalculate from scratch
-      await recalcTally(true);
-      setLoading(false);
-      return;
-    }
-  } catch(e){ toast('Failed to load tally.', true); }
-  setLoading(false);
-  renderTallyCards();
-  renderTallyAdjust();
-}
-
-async function recalcTally(silent=false){
-  if(!silent) setLoading(true);
-  try {
-    // Sum all inventory collections per size (all farms)
-    const invRows  = await sbGet('inventory', `select=size,trays,pcs`);
-    const saleRows = await sbGet('sales',     `select=size,pcs_total`);
-
-    const collected = Object.fromEntries(SIZES.map(s=>[s,0]));
-    const sold      = Object.fromEntries(SIZES.map(s=>[s,0]));
-
-    invRows.forEach(r=>{
-      if(collected[r.size] !== undefined)
-        collected[r.size] += (r.trays * TRAY) + r.pcs;
-    });
-    saleRows.forEach(r=>{
-      if(sold[r.size] !== undefined)
-        sold[r.size] += r.pcs_total;
-    });
-
-    tallyStock = Object.fromEntries(SIZES.map(s=>[s, Math.max(0, collected[s] - sold[s])]));
-    await sbUpsert('settings', [{key:'tally_stock', value:tallyStock}]);
-    if(!silent) toast('Tally recalculated ✓');
-  } catch(e){ toast('Recalculate failed: '+e.message, true); }
-  if(!silent) setLoading(false);
-  renderTallyCards();
-  renderTallyAdjust();
-}
-
-function pcsToTraysAndPcs(totalPcs){
-  const trays = Math.floor(totalPcs / TRAY);
-  const pcs   = totalPcs % TRAY;
-  return { trays, pcs };
-}
-
-function renderTallyCards(){
-  document.getElementById('tally-grid').innerHTML = SIZES.map(size=>{
-    const total = tallyStock[size] || 0;
-    const { trays, pcs } = pcsToTraysAndPcs(total);
-    const isLow = total < TRAY; // less than 1 tray = low
-    const sub = trays > 0 && pcs > 0 ? `${trays} tray${trays>1?'s':''} + ${pcs} pcs`
-              : trays > 0             ? `${trays} tray${trays>1?'s':''}`
-              : pcs > 0               ? `${pcs} pcs`
-              : 'Out of stock';
-    return `<div class="tally-size-card ${isLow?'low':''}">
-      <div class="tally-size-name">${size}</div>
-      <div class="tally-size-main">${total.toLocaleString()}</div>
-      <div class="tally-size-sub">${sub}</div>
-    </div>`;
-  }).join('');
-}
-
-function renderTallyAdjust(){
-  document.getElementById('tally-adjust-body').innerHTML = SIZES.map(size=>{
-    const total = tallyStock[size] || 0;
-    const { trays, pcs } = pcsToTraysAndPcs(total);
-    const newTotal = (trays * TRAY) + pcs;
-    return `<tr>
-      <td>${size}</td>
-      <td><input type="number" min="0" id="ta-${size}-trays" value="${trays}" oninput="updateTallyRow('${size}')"/></td>
-      <td><input type="number" min="0" id="ta-${size}-pcs"   value="${pcs}"   oninput="updateTallyRow('${size}')"/></td>
-      <td id="ta-${size}-total" style="font-family:var(--mono);font-weight:600">${newTotal}</td>
-    </tr>`;
-  }).join('');
-}
-
-function updateTallyRow(size){
-  const trays = parseInt(document.getElementById(`ta-${size}-trays`)?.value)||0;
-  const pcs   = parseInt(document.getElementById(`ta-${size}-pcs`)?.value)||0;
-  document.getElementById(`ta-${size}-total`).textContent = (trays*TRAY+pcs).toLocaleString();
-}
-
-async function saveTallyAdjust(){
-  SIZES.forEach(size=>{
-    const trays = parseInt(document.getElementById(`ta-${size}-trays`)?.value)||0;
-    const pcs   = parseInt(document.getElementById(`ta-${size}-pcs`)?.value)||0;
-    tallyStock[size] = trays*TRAY + pcs;
-  });
-  setLoading(true);
-  try {
-    await sbUpsert('settings', [{key:'tally_stock', value:tallyStock}]);
-    toast('Adjustments saved ✓');
-    renderTallyCards();
-  } catch(e){ toast('Save failed: '+e.message, true); }
-  setLoading(false);
-}
-
-async function copyTally(){
-  const now  = new Date();
-  const date = now.toLocaleDateString('en-PH', {year:'numeric', month:'long', day:'numeric'});
-  const time = now.toLocaleTimeString('en-PH', {hour:'2-digit', minute:'2-digit'});
-  const lines = SIZES.map(size=>{
-    const total = tallyStock[size] || 0;
-    const { trays, pcs } = pcsToTraysAndPcs(total);
-    const val = trays > 0 && pcs > 0 ? `${trays} tray${trays>1?'s':''} + ${pcs} pcs`
-              : trays > 0             ? `${trays} tray${trays>1?'s':''}`
-              : pcs > 0               ? `${pcs} pcs`
-              : 'Out of stock';
-    return `${size}: ${val}`;
-  }).join('\n');
-  const text = `J & V Egg Farm Tally as of ${date} ${time}\n\n${lines}`;
-  try {
-    await navigator.clipboard.writeText(text);
-    const btn = document.getElementById('btn-copy-tally');
-    btn.textContent = '✓ Copied!';
-    setTimeout(()=>btn.textContent='📋 Copy Tally', 2000);
-  } catch(e){ toast('Could not copy to clipboard.', true); }
-}
-
-// Hook into save inventory and record sale to keep tally in sync
-async function updateTallyAfterCollection(sizeData){
-  // sizeData: { size: { trays, pcs } }
-  if(Object.keys(tallyStock).length === 0) return; // not loaded yet
-  SIZES.forEach(size=>{
-    const v = sizeData[size]||{trays:0,pcs:0};
-    tallyStock[size] = (tallyStock[size]||0) + v.trays*TRAY + v.pcs;
-  });
-  await sbUpsert('settings', [{key:'tally_stock', value:tallyStock}]);
-}
-
-async function updateTallyAfterSale(size, pcsTotal){
-  if(Object.keys(tallyStock).length === 0) return;
-  tallyStock[size] = Math.max(0, (tallyStock[size]||0) - pcsTotal);
-  await sbUpsert('settings', [{key:'tally_stock', value:tallyStock}]);
 }
 
 // ─── START ────────────────────────────────────────────────────────────────────
