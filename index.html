@@ -181,6 +181,17 @@ tfoot td:first-child{text-align:left;font-family:var(--sans);font-weight:700;}
 .badge-inv{background:#EDE9FE;color:#5B21B6;}
 .badge-sale{background:var(--amber-lt);color:#92400E;}
 
+/* LATEST ACTIVITY */
+.activity-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:.85rem;}
+.activity-type{display:inline-flex;align-items:center;gap:.4rem;font-weight:700;font-size:.9rem;}
+.activity-time{font-size:.78rem;color:var(--muted);}
+.activity-rows{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:.5rem;}
+.activity-row{background:var(--bg);border-radius:7px;padding:.45rem .7rem;display:flex;align-items:center;justify-content:space-between;}
+.activity-row-size{font-weight:600;font-size:.84rem;}
+.activity-row-val{font:600 .84rem var(--mono);}
+.activity-row-val.positive{color:var(--green);}
+.activity-row-val.negative{color:var(--red);}
+
 /* MISC */
 .empty{text-align:center;padding:2.5rem 1rem;color:var(--muted);font-size:.88rem;}
 .empty-icon{font-size:2rem;margin-bottom:.4rem;}
@@ -290,6 +301,11 @@ tfoot td:first-child{text-align:left;font-family:var(--sans);font-weight:700;}
   <div class="save-row">
     <div style="font-size:.8rem;color:var(--muted);max-width:420px;">Trays &amp; Pieces above reflect collections minus sales. Edit any values to correct discrepancies, then save.</div>
     <button class="btn-primary" id="btn-save-tally" onclick="saveTallyAdjustments()">Save Adjustments</button>
+  </div>
+
+  <div class="section-label">Latest Activity</div>
+  <div class="card" id="tally-activity">
+    <div class="empty"><div class="empty-icon">📭</div>No recent activity</div>
   </div>
 </div>
 
@@ -809,8 +825,87 @@ async function loadTally(){
     await loadTallySettings();
     tallyBaseline = await computeTallyBaseline();
     renderTallyGrid();
+    await loadLatestActivity();
   } catch(e){ toast('Failed to load tally.',true); }
   setLoading(false);
+}
+
+async function loadLatestActivity(){
+  const el = document.getElementById('tally-activity');
+  try {
+    // get most recent sale and most recent inventory date
+    const [lastSale, lastInvDate] = await Promise.all([
+      sbGet('sales',     'select=created_at,size,unit,qty,pcs_total&order=created_at.desc&limit=1'),
+      sbGet('inventory', 'select=date&order=date.desc&limit=1'),
+    ]);
+
+    const events = [];
+
+    // most recent sale
+    if(lastSale.length){
+      events.push({ type:'sale', ts: new Date(lastSale[0].created_at), data: lastSale });
+    }
+
+    // most recent collection — fetch all sizes for that date across all farms
+    if(lastInvDate.length){
+      const date = lastInvDate[0].date;
+      const rows = await sbGet('inventory', `date=eq.${date}&select=farm_index,size,trays,pcs`);
+      // sum across farms
+      const totals = {};
+      rows.forEach(r=>{
+        if(!totals[r.size]) totals[r.size]={trays:0,pcs:0};
+        totals[r.size].trays += r.trays;
+        totals[r.size].pcs   += r.pcs;
+      });
+      // use noon of that date as timestamp for comparison
+      events.push({ type:'collection', ts: new Date(date+'T12:00:00'), date, totals });
+    }
+
+    if(!events.length){
+      el.innerHTML = '<div class="empty"><div class="empty-icon">📭</div>No recent activity</div>';
+      return;
+    }
+
+    // pick whichever is more recent
+    events.sort((a,b)=>b.ts-a.ts);
+    const latest = events[0];
+
+    if(latest.type==='sale'){
+      const s = latest.data[0];
+      const unitLabel = s.unit==='pcs' ? 'pcs' : s.unit==='half' ? 'half tray(s)' : 'tray(s)';
+      const timeStr = latest.ts.toLocaleString('en-PH',{month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'});
+      el.innerHTML = `
+        <div class="activity-header">
+          <span class="activity-type">🛒 Sale</span>
+          <span class="activity-time">${timeStr}</span>
+        </div>
+        <div class="activity-rows">
+          <div class="activity-row">
+            <span class="activity-row-size">${s.size}</span>
+            <span class="activity-row-val negative">−${s.pcs_total} pcs (${s.qty} ${unitLabel})</span>
+          </div>
+        </div>`;
+    } else {
+      const timeStr = latest.ts.toLocaleDateString('en-PH',{month:'short',day:'numeric',year:'numeric'});
+      const sizeRows = SIZES.map(size=>{
+        const v = latest.totals[size];
+        if(!v || (v.trays===0 && v.pcs===0)) return null;
+        const pcs = v.trays*TRAY + v.pcs;
+        return `<div class="activity-row">
+          <span class="activity-row-size">${size}</span>
+          <span class="activity-row-val positive">+${v.trays}T ${v.pcs}pc (${pcs} pcs)</span>
+        </div>`;
+      }).filter(Boolean).join('');
+      el.innerHTML = `
+        <div class="activity-header">
+          <span class="activity-type">🥚 Collection</span>
+          <span class="activity-time">${timeStr}</span>
+        </div>
+        <div class="activity-rows">${sizeRows||'<span style="color:var(--muted);font-size:.85rem">No eggs recorded</span>'}</div>`;
+    }
+  } catch(e){
+    el.innerHTML = '<div class="empty"><div class="empty-icon">⚠️</div>Could not load activity</div>';
+  }
 }
 
 async function saveTallyAdjustments(){
