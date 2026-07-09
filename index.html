@@ -833,47 +833,26 @@ async function loadTally(){
 async function loadLatestActivity(){
   const el = document.getElementById('tally-activity');
   try {
-    // get most recent sale and most recent inventory date
-    const [lastSale, lastInvDate] = await Promise.all([
+    const [lastSale, lastInv] = await Promise.all([
       sbGet('sales',     'select=created_at,size,unit,qty,pcs_total&order=created_at.desc&limit=1'),
-      sbGet('inventory', 'select=date&order=date.desc&limit=1'),
+      sbGet('inventory', 'select=date,updated_at&order=updated_at.desc&limit=1'),
     ]);
 
-    const events = [];
+    const saleTs = lastSale.length ? new Date(lastSale[0].created_at) : null;
+    const invTs  = lastInv.length  ? new Date(lastInv[0].updated_at)  : null;
 
-    // most recent sale
-    if(lastSale.length){
-      events.push({ type:'sale', ts: new Date(lastSale[0].created_at), data: lastSale });
-    }
-
-    // most recent collection — fetch all sizes for that date across all farms
-    if(lastInvDate.length){
-      const date = lastInvDate[0].date;
-      const rows = await sbGet('inventory', `date=eq.${date}&select=farm_index,size,trays,pcs`);
-      // sum across farms
-      const totals = {};
-      rows.forEach(r=>{
-        if(!totals[r.size]) totals[r.size]={trays:0,pcs:0};
-        totals[r.size].trays += r.trays;
-        totals[r.size].pcs   += r.pcs;
-      });
-      // use noon of that date as timestamp for comparison
-      events.push({ type:'collection', ts: new Date(date+'T12:00:00'), date, totals });
-    }
-
-    if(!events.length){
+    // if neither exists
+    if(!saleTs && !invTs){
       el.innerHTML = '<div class="empty"><div class="empty-icon">📭</div>No recent activity</div>';
       return;
     }
 
-    // pick whichever is more recent
-    events.sort((a,b)=>b.ts-a.ts);
-    const latest = events[0];
+    const showSale = saleTs && (!invTs || saleTs > invTs);
 
-    if(latest.type==='sale'){
-      const s = latest.data[0];
+    if(showSale){
+      const s = lastSale[0];
       const unitLabel = s.unit==='pcs' ? 'pcs' : s.unit==='half' ? 'half tray(s)' : 'tray(s)';
-      const timeStr = latest.ts.toLocaleString('en-PH',{month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'});
+      const timeStr = saleTs.toLocaleString('en-PH',{month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'});
       el.innerHTML = `
         <div class="activity-header">
           <span class="activity-type">🛒 Sale</span>
@@ -886,9 +865,17 @@ async function loadLatestActivity(){
           </div>
         </div>`;
     } else {
-      const timeStr = latest.ts.toLocaleDateString('en-PH',{month:'short',day:'numeric',year:'numeric'});
+      const date = lastInv[0].date;
+      const rows = await sbGet('inventory', `date=eq.${date}&select=farm_index,size,trays,pcs`);
+      const totals = {};
+      rows.forEach(r=>{
+        if(!totals[r.size]) totals[r.size]={trays:0,pcs:0};
+        totals[r.size].trays += r.trays;
+        totals[r.size].pcs   += r.pcs;
+      });
+      const timeStr = invTs.toLocaleString('en-PH',{month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'});
       const sizeRows = SIZES.map(size=>{
-        const v = latest.totals[size];
+        const v = totals[size];
         if(!v || (v.trays===0 && v.pcs===0)) return null;
         const pcs = v.trays*TRAY + v.pcs;
         return `<div class="activity-row">
