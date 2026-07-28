@@ -723,6 +723,7 @@ async function recordSale(){
     document.getElementById('sale-custom-price').value='';
     posSelected=null; renderSizeBtns(); updateSalesPreview();
     loadTodaySales();
+    loadTally(); // keep tally in sync
   } catch(e){ toast('Save failed: '+e.message, true); }
   btn.disabled=false; btn.textContent='Record Sale';
   setLoading(false);
@@ -759,8 +760,9 @@ async function loadTodaySales(){
 }
 
 // ─── TALLY ───────────────────────────────────────────────────────────────────
-// tallyBaseline[size] = (total pieces collected across all farms) - (total pieces sold), in pcs
-// tallyAdjustments[size] = manual correction offset (in pcs), persisted in settings table
+// tallyBaseline[size]      = (total collected pcs) - (total sold pcs), freshly computed each load
+// tallyAdjustments[size]   = { target, snapshot } — target is what user set it to, snapshot is
+//                            the baseline at that moment. Future sales/collections apply on top.
 let tallyBaseline    = {};
 let tallyAdjustments = {};
 
@@ -785,11 +787,22 @@ async function computeTallyBaseline(){
   return baseline;
 }
 
+function getTallyPcs(size){
+  const current = tallyBaseline[size]||0;
+  const adj     = tallyAdjustments[size];
+  if(!adj || typeof adj !== 'object') {
+    // no adjustment or old format — just use baseline
+    return current;
+  }
+  // target + any sales/collections that happened after the adjustment was saved
+  return Math.max(0, adj.target + (current - adj.snapshot));
+}
+
 function renderTallyGrid(){
   document.getElementById('tally-egg-grid').innerHTML = SIZES.map(size=>{
-    const total = (tallyBaseline[size]||0) + (tallyAdjustments[size]||0);
-    const trays = Math.trunc(total/TRAY);
-    const pcs   = total - trays*TRAY;
+    const totalPcs = getTallyPcs(size);
+    const trays    = Math.trunc(totalPcs/TRAY);
+    const pcs      = totalPcs - trays*TRAY;
     return `<div class="egg-card">
       <div class="egg-card-top">
         <span class="egg-size-label">${size}</span>
@@ -833,47 +846,26 @@ async function loadTally(){
 async function loadLatestActivity(){
   const el = document.getElementById('tally-activity');
   try {
-    // get most recent sale and most recent inventory date
-    const [lastSale, lastInvDate] = await Promise.all([
+    const [lastSale, lastInv] = await Promise.all([
       sbGet('sales',     'select=created_at,size,unit,qty,pcs_total&order=created_at.desc&limit=1'),
-      sbGet('inventory', 'select=date&order=date.desc&limit=1'),
+      sbGet('inventory', 'select=date,updated_at&order=updated_at.desc&limit=1'),
     ]);
 
-    const events = [];
+    const saleTs = lastSale.length ? new Date(lastSale[0].created_at) : null;
+    const invTs  = lastInv.length  ? new Date(lastInv[0].updated_at)  : null;
 
-    // most recent sale
-    if(lastSale.length){
-      events.push({ type:'sale', ts: new Date(lastSale[0].created_at), data: lastSale });
-    }
-
-    // most recent collection — fetch all sizes for that date across all farms
-    if(lastInvDate.length){
-      const date = lastInvDate[0].date;
-      const rows = await sbGet('inventory', `date=eq.${date}&select=farm_index,size,trays,pcs`);
-      // sum across farms
-      const totals = {};
-      rows.forEach(r=>{
-        if(!totals[r.size]) totals[r.size]={trays:0,pcs:0};
-        totals[r.size].trays += r.trays;
-        totals[r.size].pcs   += r.pcs;
-      });
-      // use noon of that date as timestamp for comparison
-      events.push({ type:'collection', ts: new Date(date+'T12:00:00'), date, totals });
-    }
-
-    if(!events.length){
+    // if neither exists
+    if(!saleTs && !invTs){
       el.innerHTML = '<div class="empty"><div class="empty-icon">📭</div>No recent activity</div>';
       return;
     }
 
-    // pick whichever is more recent
-    events.sort((a,b)=>b.ts-a.ts);
-    const latest = events[0];
+    const showSale = saleTs && (!invTs || saleTs > invTs);
 
-    if(latest.type==='sale'){
-      const s = latest.data[0];
+    if(showSale){
+      const s = lastSale[0];
       const unitLabel = s.unit==='pcs' ? 'pcs' : s.unit==='half' ? 'half tray(s)' : 'tray(s)';
-      const timeStr = latest.ts.toLocaleString('en-PH',{month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'});
+      const timeStr = saleTs.toLocaleString('en-PH',{month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'});
       el.innerHTML = `
         <div class="activity-header">
           <span class="activity-type">🛒 Sale</span>
@@ -886,9 +878,17 @@ async function loadLatestActivity(){
           </div>
         </div>`;
     } else {
-      const timeStr = latest.ts.toLocaleDateString('en-PH',{month:'short',day:'numeric',year:'numeric'});
+      const date = lastInv[0].date;
+      const rows = await sbGet('inventory', `date=eq.${date}&select=farm_index,size,trays,pcs`);
+      const totals = {};
+      rows.forEach(r=>{
+        if(!totals[r.size]) totals[r.size]={trays:0,pcs:0};
+        totals[r.size].trays += r.trays;
+        totals[r.size].pcs   += r.pcs;
+      });
+      const timeStr = invTs.toLocaleString('en-PH',{month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'});
       const sizeRows = SIZES.map(size=>{
-        const v = latest.totals[size];
+        const v = totals[size];
         if(!v || (v.trays===0 && v.pcs===0)) return null;
         const pcs = v.trays*TRAY + v.pcs;
         return `<div class="activity-row">
@@ -914,10 +914,11 @@ async function saveTallyAdjustments(){
   setLoading(true);
   try {
     SIZES.forEach(size=>{
-      const tr=parseInt(document.getElementById(`tly-${size}-trays`)?.value||0)||0;
-      const pc=parseInt(document.getElementById(`tly-${size}-pcs`)?.value||0)||0;
-      const target = tr*TRAY+pc;
-      tallyAdjustments[size] = target - (tallyBaseline[size]||0);
+      const tr     = parseInt(document.getElementById(`tly-${size}-trays`)?.value||0)||0;
+      const pc     = parseInt(document.getElementById(`tly-${size}-pcs`)?.value||0)||0;
+      const target = tr*TRAY + pc;
+      // store what the user wants + the current baseline as the snapshot
+      tallyAdjustments[size] = { target, snapshot: tallyBaseline[size]||0 };
     });
     await sbUpsert('settings',[{key:'tallyAdjustments', value:tallyAdjustments}]);
     toast('Tally adjustments saved');
