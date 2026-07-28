@@ -723,6 +723,7 @@ async function recordSale(){
     document.getElementById('sale-custom-price').value='';
     posSelected=null; renderSizeBtns(); updateSalesPreview();
     loadTodaySales();
+    loadTally(); // keep tally in sync
   } catch(e){ toast('Save failed: '+e.message, true); }
   btn.disabled=false; btn.textContent='Record Sale';
   setLoading(false);
